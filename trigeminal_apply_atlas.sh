@@ -145,6 +145,7 @@ echo "|------------- 2) Done -------------|"
 echo ""
 
 
+# TODO: add an option to do first order only
 echo "|------------- 3) Register atlas components  -------------|"
 for mask_type in bundles_mask
 do
@@ -161,6 +162,7 @@ do
 			    -o ${out_dir}/orig_space/${mask_type}__${atlas_component} \
 			    -n NearestNeighbor;
 
+	# TODO: need to binarize mask + dilate it a few voxels
         scil_volume_math convert \
 			 ${out_dir}/orig_space/${mask_type}__${atlas_component} \
 			 ${out_dir}/orig_space/${mask_type}__${atlas_component} \
@@ -170,6 +172,11 @@ done
 echo "|------------- 3) Done -------------|"
 echo ""
 
+# TODO: real BST
+#     i) generate dilated endpoints mask
+#     ii) TODI maps from tempalte
+#     iii) e-fodf
+#     iv) perform local tracking seeding from dilated union masks with endpoints, using e-fodf and a low FA threshold
 echo "|------------- 4) Tracking from atlas component  -------------|"
 for component in left_mesencephalic.nii.gz left_spinal.nii.gz left_remaining_cp.nii.gz right_mesencephalic.nii.gz right_spinal.nii.gz right_remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
 do
