@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# This version of the script performs a Bundle-Specific Tractography (BST)
+# based on the a priori of the trigeminal_nerve atlas. That is, the atlas
+# is used as prior to seed aggressively and define masks to help tractography.
+# The FA threshold is lowered to 0.01 to track everywhere. 
 
 # Input structure
 #
@@ -12,8 +17,9 @@
 #    │   │   └─── sub-01__fodf.nii.gz
 #    │   │   └─── sub-01__t1_warped.nii.gz
 
-# example of running the scrpt
-# ~/Research/Source/trigeminal/trigeminal_apply_atlas.sh -s input/S1/ -m ~/Research/Source/trigeminal/ROIs_clean/ -a ~/Research/Source/trigeminal/atlas/ -o output_atlas/S1/ -t 8 -g true
+#
+# Example of running the scrpt
+# trigeminal_apply_atlas.sh -s input/S1/ -m ~/Research/Source/trigeminal/ROIs_clean/ -a ~/Research/Source/trigeminal/atlas/ -o output_atlas/S1/ -t 8 -g true
 
 
 usage() { echo "$(basename $0) [-s path/to/subject] [-m path/to/trigeminal/ROIs_clean] [-a path/to/trigeminal/atlas] [-o output_dir] [-t nb_threads] [-g] (if you have a gpu)" 1>&2; exit 1; }
@@ -78,7 +84,7 @@ echo "|------------- 1.1) Reshape aparc.DKTatlas+aseg.mgz orig space -----------
 ## [ORIG-SPACE] Reshape aparc.DKTatlas+aseg.mgz
 scil_volume_reslice_to_reference ${subject_dir}/freesurfer/aparc.DKTatlas+aseg.mgz \
 				 ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
-				 ${orig_rois_dir}_aparc.DKTatlas+aseg_orig.nii.gz \
+				 ${orig_rois_dir}/aparc.DKTatlas+aseg_orig.nii.gz \
 				 --interpolation nearest --keep_dtype -f
 echo "|------------- 1) Done -------------|"
 echo ""
@@ -92,31 +98,31 @@ Right_Cerebral_WM=(41)
 Cerebellum_Cortex=(8 47)
 Right_Cerebellum_WM=(46)
 Left_Cerebellum_WM=(7)
-Any_Exclusion_ROI=(${Left_Cerebral_Cortex[*]} ${Right_Cerebral_Cortex[*]} ${Left_Cerebral_WM[*]} ${Right_Cerebral_WM[*]} ${Cerebellum_Cortex[*]}) #Generate bilateral exclusion array
+Any_Exclusion_ROI=(${Left_Cerebral_Cortex[*]} ${Right_Cerebral_Cortex[*]} ${Left_Cerebral_WM[*]} ${Right_Cerebral_WM[*]} ${Cerebellum_Cortex[*]}) #Generate bilateral exclusion array 
 
 ## Exclusions ROIs masks
 ## Generate bilateral exclusion ROI
 echo "|------------- 2.1) any_exclusion_roi_orig -------------|"
-scil_labels_combine ${orig_rois_dir}_any_exclusion_roi_orig.nii.gz \
-		    --volume_ids ${orig_rois_dir}_aparc.DKTatlas+aseg_orig.nii.gz ${Any_Exclusion_ROI[*]} \
+scil_labels_combine ${orig_rois_dir}/any_exclusion_roi_orig.nii.gz \
+		    --volume_ids ${orig_rois_dir}/aparc.DKTatlas+aseg_orig.nii.gz ${Any_Exclusion_ROI[*]} \
 		    --merge_groups -f
 
 echo "|------------- 2.2) cerebellum_wm_right_orig -------------|"
 ## WM Cerebellum Right
-scil_labels_combine ${orig_rois_dir}_right_cerebellum_wm_orig.nii.gz \
-		    --volume_ids ${orig_rois_dir}_aparc.DKTatlas+aseg_orig.nii.gz ${Right_Cerebellum_WM[*]} \
+scil_labels_combine ${orig_rois_dir}/right_cerebellum_wm_orig.nii.gz \
+		    --volume_ids ${orig_rois_dir}/aparc.DKTatlas+aseg_orig.nii.gz ${Right_Cerebellum_WM[*]} \
 		    --merge_groups -f
 
 ## WM Cerebellum Left
 echo "|------------- 2.3) cerebellum_wm_left_orig -------------|"
-scil_labels_combine ${orig_rois_dir}_left_cerebellum_wm_orig.nii.gz \
-		    --volume_ids ${orig_rois_dir}_aparc.DKTatlas+aseg_orig.nii.gz ${Left_Cerebellum_WM[*]} \
+scil_labels_combine ${orig_rois_dir}/left_cerebellum_wm_orig.nii.gz \
+		    --volume_ids ${orig_rois_dir}/aparc.DKTatlas+aseg_orig.nii.gz ${Left_Cerebellum_WM[*]} \
 		    --merge_groups -f
 
 # WM mask
 scil_volume_math lower_threshold ${subject_dir}/tractoflow/*__fa.nii.gz \
 		 ${fa_threshold} \
-		 ${orig_rois_dir}_wm_mask_${fa_threshold}_orig.nii.gz \
+		 ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
 		 --data_type uint8 -f
 
 # Register these ROI in MNI space
@@ -124,16 +130,16 @@ echo "|------------- 2.4) Registration in MNI space -------------|"
 for roi in right_cerebellum_wm left_cerebellum_wm any_exclusion_roi
 do
     antsApplyTransforms -d 3 \
-			-i ${orig_rois_dir}_${roi}_orig.nii.gz \
+			-i ${orig_rois_dir}/${roi}_orig.nii.gz \
 			-r ${mni_dir}/MNI/mni_masked.nii.gz \
 			-t [${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat, 1] \
 			-t ${out_dir}/orig_space/transfo/2orig_1InverseWarp.nii.gz \
-			-o ${mni_rois_dir}_${roi}_mni.nii.gz \
+			-o ${mni_rois_dir}/${roi}_mni.nii.gz \
 			-n NearestNeighbor;
     
     scil_volume_math convert \
-		     ${mni_rois_dir}_${roi}_mni.nii.gz \
-		     ${mni_rois_dir}_${roi}_mni.nii.gz --data_type int16 -f
+		     ${mni_rois_dir}/${roi}_mni.nii.gz \
+		     ${mni_rois_dir}/${roi}_mni.nii.gz --data_type int16 -f
 done
 echo "|------------- 2) Done -------------|"
 echo ""
@@ -171,10 +177,12 @@ do
     atlas_component=$component
     for npv in ${npv_list};
     do
+
+	# TODO: replace by the ensemble tractography strategy of Nasrin and trigeminal_first_order.sh
         echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv} -------------|"
         scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
 			    ${out_dir}/orig_space/bundles_mask__${atlas_component} \
-			    ${orig_rois_dir}_wm_mask_${fa_threshold}_orig.nii.gz \
+			    ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
 			    ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/_npv_${npv}.trk} \
 			    --npv ${npv} \
 			    ${gpu} -f;
@@ -205,9 +213,9 @@ do
             echo "|------------- 5.1b) Major filtering for ${atlas_component} nside: ${nside} npv: ${npv} -------------|"
             scil_tractogram_filter_by_roi ${mni_tracking_dir}/orig__${nside}_${atlas_component}_npv_${npv}.trk \
 					  ${mni_tracking_dir}/filtered_${nside}_${atlas_component}_npv_${npv}.trk \
-					  --drawn_roi ${mni_rois_dir}_any_exclusion_roi_mni.nii.gz 'any' 'exclude' \
-					  --drawn_roi ${mni_rois_dir}_${nside/${nside}/${opposite_side/${nside}/}}_cerebellum_wm_mni.nii.gz 'any' 'exclude' \
-					  --drawn_roi ${mni_rois_dir}_${nside}_cerebellum_wm_mni.nii.gz 'either_end' 'exclude' \
+					  --drawn_roi ${mni_rois_dir}/any_exclusion_roi_mni.nii.gz 'any' 'exclude' \
+					  --drawn_roi ${mni_rois_dir}/${nside/${nside}/${opposite_side/${nside}/}}_cerebellum_wm_mni.nii.gz 'any' 'exclude' \
+					  --drawn_roi ${mni_rois_dir}/${nside}_cerebellum_wm_mni.nii.gz 'either_end' 'exclude' \
 					  --drawn_roi ${mni_dir}/MNI/midsagittal_plane.nii.gz 'any' 'exclude' \
 					  --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz any include -f -v # It was not needed when creating atlas since everything was tracked from cp
         done
