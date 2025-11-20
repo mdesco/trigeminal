@@ -92,8 +92,8 @@ echo "|------------- 1) Done -------------|"
 echo ""
 
 echo "|------------- 2) Generate exclusions and inclusions ROI -------------|"
-## [ORIG-SPACE] Exclusions ROI labels
-Left_Cerebral_Cortex=($(seq 1000 1035))
+## [ORIG-SPACE] Exclusions ROI labels 
+Left_Cerebral_Cortex=($(seq 1000 1035)) # warning for missing labels is normal
 Right_Cerebral_Cortex=($(seq 2000 2035))
 Left_Cerebral_WM=(2)
 Right_Cerebral_WM=(41)
@@ -147,29 +147,25 @@ echo "|------------- 2) Done -------------|"
 echo ""
 
 
-# TODO: add an option to do first order only
 echo "|------------- 3) Register atlas components  -------------|"
 for mask_type in bundles_mask
 do
     echo "|------------- 3.1) Component : Register atlas components from folder ${mask_type} in orig space -------------|"
-    for component in left_mesencephalic.nii.gz left_spinal.nii.gz left_remaining_cp.nii.gz right_mesencephalic.nii.gz right_spinal.nii.gz right_remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
+    for component in ${atlas_dir}/${mask_type}/*;
     do
-	atlas_component=$component
-
+        atlas_component=`basename "$component"`
         echo "|------------- 3.2) Component : ${atlas_component} -------------|"
         antsApplyTransforms -d 3 \
 			    -i ${component} \
 			    -r ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
 			    -t ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
 			    -t ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
-			    -o ${out_dir}/orig_space/${mask_type}__${atlas_component} \
+			    -o ${out_dir}/orig_space/${mask_type}/${atlas_component} \
 			    -n NearestNeighbor;
-
-	# TODO: need to binarize mask + dilate it a few voxels
-	# Maybe we should at the CP_left and CP_right to the bundle_masks???
+	
         scil_volume_math convert \
-			 ${out_dir}/orig_space/${mask_type}__${atlas_component} \
-			 ${out_dir}/orig_space/${mask_type}__${atlas_component} \
+			 ${out_dir}/orig_space/${mask_type}/${atlas_component} \
+			 ${out_dir}/orig_space/${mask_type}/${atlas_component} \
 			 --data_type int16 -f;
     done
 done
@@ -189,7 +185,7 @@ do
     # TODO: replace by the ensemble tractography strategy of Nasrin and trigeminal_first_order.sh
     echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv} -------------|"
     scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
-			${out_dir}/orig_space/bundles_mask__${atlas_component} \
+			${out_dir}/orig_space/bundles_mask/${atlas_component} \
 			${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
 			${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
 			--npv ${npv} \
@@ -298,7 +294,6 @@ do
 					--remove_invalid 
     done
 done
-
 
 
 # Last organization move of files in the proper output directories in mni_space
