@@ -285,7 +285,7 @@ for atlas_component in mesencephalic spinal remaining_cp
 do
     for nside in left right
     do
-        scil_tractogram_apply_transform ${mni_tracking_dir}/orig__${nside}_${atlas_component}.trk \
+        scil_tractogram_apply_transform ${mni_tracking_dir}/final__${nside}_${atlas_component}.trk \
 					${subject_dir}/tractoflow/S1__t1_warped.nii.gz \
 					${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
 					${orig_tracking_dir}/final/final_${nside}_${atlas_component}.trk \
