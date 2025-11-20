@@ -290,7 +290,7 @@ do
 					${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
 					${orig_tracking_dir}/final/final_${nside}_${atlas_component}.trk \
 					--inverse \
-					--in_deformation ../../../../output_atlas/S1/orig_space/transfo/2orig_1InverseWarp.nii.gz \
+					--in_deformation ${out_dir}/orig_space/transfo/2orig_1InverseWarp.nii.gz \
 					--remove_invalid 
     done
 done
