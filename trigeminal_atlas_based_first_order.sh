@@ -65,7 +65,7 @@ fa_threshold=0.01
 
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
 mkdir -p ${out_dir}/{orig_space,mni_space}/rois
-mkdir -p ${out_dir}/mni_space/tractograms/{orig,filtered,segmented,final}
+mkdir -p ${out_dir}/mni_space/tractograms/{orig,filtered,length,segmented,final}
 mkdir -p ${out_dir}/orig_space/tractograms/{orig,final}
 
 orig_rois_dir=${out_dir}/orig_space/rois
@@ -235,7 +235,11 @@ do
 				  --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
 				  --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include' \
 				  -f
-	
+
+    # TODO: length threshold
+    # 37 mm < length < 82 mm
+
+    
     scil_bundle_reject_outliers \
         ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk \
         ${mni_tracking_dir}/final_${nside}_mesencephalic.trk -f
@@ -252,6 +256,9 @@ do
 				  --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
 				  --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' \
 				  -f
+    
+    # TODO: length threshold
+    # 9 mm < length < 38 mm
     
     # TODO: we apply the length and ROI rules of Nasrine in the future.
     scil_bundle_reject_outliers \
@@ -273,6 +280,10 @@ do
 				  --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'include' \
 				  --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
 				  -f
+
+    # TODO: length threshold
+    # 36 mm < length < 70 mm
+    
     scil_bundle_reject_outliers \
         ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
         ${mni_tracking_dir}/final_${nside}_spinal.trk \
@@ -296,6 +307,11 @@ do
 done
 
 
+# TODO: need better cleaning up
+#  1) Length thresholds first - easy
+#  2) Outlier, better alpha? - easy 
+#  3) Recobundle with atlas? - later
+
 # Last organization move of files in the proper output directories in mni_space
 mv  ${mni_tracking_dir}/orig_*  ${mni_tracking_dir}/orig/
 mv  ${mni_tracking_dir}/filtered_*  ${mni_tracking_dir}/filtered/
@@ -303,7 +319,7 @@ mv  ${mni_tracking_dir}/segmented_*  ${mni_tracking_dir}/segmented/
 mv  ${mni_tracking_dir}/final_*  ${mni_tracking_dir}/final/
 
 
-#TODO: Last organization move of files in the proper output directories in orig_space 
+# TODO: Last organization move of files in the proper output directories in orig_space 
 
 echo "|------------- Done -------------|"
 echo ""
