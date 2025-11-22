@@ -58,10 +58,13 @@ echo "Atlas MNI: " ${atlas_dir}
 echo "Output folder: " ${out_dir}
 echo "GPU: " ${gpu}
 
-npv="400" #TODO: add an npv option. No need for npy=100. Sub-optimal.
+npv="400" #TODO: add an npv option. No need for npy=100. Sub-optimal. At npv 400, mesencephalic is still a bit small.
+          #      Lets wait before augmenting npv more. 
           #TODO: once Nasrine's PR is in, we mimick her ensemble tractography with 9 local tracking and npv/9
 opposite_side=leftright
-fa_threshold=0.01
+fa_threshold=0.01 # TODO: Test this parameter. Should it be that low??? FA 0.1 should do.
+                  # TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
+                  #      PFT would allow the tracking to bounce of the CSF to continue tracking
 
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
 mkdir -p ${out_dir}/{orig_space,mni_space}/rois
@@ -183,12 +186,14 @@ do
     atlas_component=$component
 
     # TODO: replace by the ensemble tractography strategy of Nasrin and trigeminal_first_order.sh
+    #       - PFT tracking necessary one day
     echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv} -------------|"
     scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
 			${out_dir}/orig_space/bundles_mask/${atlas_component} \
 			${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
 			${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
 			--npv ${npv} \
+			--min_length 8 --max_length 100 \ 
 			${gpu} -f;
 	
     echo "|------------- 4.2) Register tracking to MNI space -------------|"
@@ -319,7 +324,7 @@ mv  ${mni_tracking_dir}/segmented_*  ${mni_tracking_dir}/segmented/
 mv  ${mni_tracking_dir}/final_*  ${mni_tracking_dir}/final/
 
 
-# TODO: Last organization move of files in the proper output directories in orig_space 
+# TODO: option to clean up temporary trk?
 
 echo "|------------- Done -------------|"
 echo ""
