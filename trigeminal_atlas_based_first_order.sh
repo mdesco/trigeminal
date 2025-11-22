@@ -68,7 +68,7 @@ fa_threshold=0.01 # TODO: Test this parameter. Should it be that low??? FA 0.1 s
 
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
 mkdir -p ${out_dir}/{orig_space,mni_space}/rois
-mkdir -p ${out_dir}/mni_space/tractograms/{orig,filtered,length,segmented,final}
+mkdir -p ${out_dir}/mni_space/tractograms/{orig,filtered,length,outliers,segmented,final}
 mkdir -p ${out_dir}/orig_space/tractograms/{orig,final}
 
 orig_rois_dir=${out_dir}/orig_space/rois
@@ -312,10 +312,9 @@ do
 done
 
 
-# TODO: need better cleaning up
-#  1) Length thresholds first - easy
-#  2) Outlier, better alpha? - easy 
-#  3) Recobundle with atlas? - later
+# TODO: need better cleaning up -  Recobundle with atlas? - later
+#  - length
+#  - recobundle
 
 # Last organization move of files in the proper output directories in mni_space
 mv  ${mni_tracking_dir}/orig_*  ${mni_tracking_dir}/orig/
