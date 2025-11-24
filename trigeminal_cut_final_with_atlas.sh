@@ -59,7 +59,7 @@ do
 	else
 	    echo $t
 	    scil_tractogram_cut_streamlines $t ${t/.trk/_cut.trk} \
-					    --mask ${atlas_dir}/left_spinal_mask_dil3.nii.gz \
+					    --mask ${atlas_dir}/right_spinal_mask_dil3.nii.gz \
 					    --trim_endpoints --processes 8 -f
 	fi
     fi
