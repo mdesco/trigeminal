@@ -1,6 +1,9 @@
 
 # trigeminal_filter_final_by_length.sh -f path/to/final/dir/trks
 
+# example run:
+# trigeminal_filter_final_by_length.sh -f ~/Research/data_temp/re-move/RE-MOVE_MRI_protocol/RE-MOVE_001_processing/output_atlas/S1/mni_space/tractograms/final/
+
 usage() { echo "$(basename $0) [-f path/to/final/dir/trks]" 1>&2; exit 1; }
 
 while getopts "f:" args; do

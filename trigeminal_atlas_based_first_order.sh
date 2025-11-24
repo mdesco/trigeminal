@@ -59,12 +59,17 @@ echo "Output folder: " ${out_dir}
 echo "GPU: " ${gpu}
 
 npv="400" #TODO: add an npv option. No need for npy=100. Sub-optimal. At npv 400, mesencephalic is still a bit small.
-          #      Lets wait before augmenting npv more. 
-          #TODO: once Nasrine's PR is in, we mimick her ensemble tractography with 9 local tracking and npv/9
+#      Lets wait to have ensemble tractography before augmenting npv more.
+# Observations: at 2mm iso, on Melodie's data, I have a feeling mesencephalic could need NPV > 400. Other parts are ok.
+# On 1.7 iso, npv 400 seems like a trade-off.
+# I bet HCP data could need less.
+# The npv could be adjusted depending on the track of interest. The easiest and thickess is clearly the spinal. 
+# TODO: once Nasrine's PR is in, we mimick her ensemble tractography with 9 local tracking and npv/9
+
 opposite_side=leftright
-fa_threshold=0.01 # TODO: Test this parameter. Should it be that low??? FA 0.1 should do.
-                  # TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
-                  #      PFT would allow the tracking to bounce of the CSF to continue tracking
+fa_threshold=0.1 # TODO: Maybe go with 0.15 as Nasrine. To test.  
+                 # TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
+                 #      PFT would allow the tracking to bounce of the CSF to continue tracking
 
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
 mkdir -p ${out_dir}/{orig_space,mni_space}/rois
@@ -193,8 +198,8 @@ do
 			${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
 			${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
 			--npv ${npv} \
-			--min_length 8 --max_length 100 \ 
-			${gpu} -f;
+			--min_length 8 --max_length 100 \
+			${gpu} -f
 	
     echo "|------------- 4.2) Register tracking to MNI space -------------|"
     scil_tractogram_apply_transform \
@@ -243,7 +248,6 @@ do
 
     # TODO: length threshold
     # 37 mm < length < 82 mm
-
     
     scil_bundle_reject_outliers \
         ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk \
@@ -285,6 +289,8 @@ do
 				  --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'include' \
 				  --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
 				  -f
+
+    # TODO: we need better filetring with ROI of the spinal part. There is a branch that we pick that we should not have.
 
     # TODO: length threshold
     # 36 mm < length < 70 mm
