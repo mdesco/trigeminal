@@ -62,7 +62,7 @@ npv="400" #TODO: add an npv option. No need for npy=100. Sub-optimal. At npv 400
 #      Lets wait to have ensemble tractography before augmenting npv more.
 # Observations: at 2mm iso, on Melodie's data, I have a feeling mesencephalic could need NPV > 400. Other parts are ok.
 # On 1.7 iso, npv 400 seems like a trade-off.
-# I bet HCP data could need less.
+# HCP, the mesencephalic part is the tiniest. Could take more npv. The turn is hard to make. 
 # The npv could be adjusted depending on the track of interest. The easiest and thickess is clearly the spinal. 
 # TODO: once Nasrine's PR is in, we mimick her ensemble tractography with 9 local tracking and npv/9
 
@@ -183,7 +183,7 @@ echo ""
 # TODO: real BST
 #     i) generate dilated endpoints mask
 #     ii) TODI maps from tempalte
-#     iii) e-fodf
+#     iii) e-fodf. I think this step will help tracking take the turn, for e.g. on the mesencephalic part
 #     iv) perform local tracking seeding from dilated union masks with endpoints, using e-fodf and a low FA threshold
 echo "|------------- 4) Tracking from atlas component  -------------|"
 for component in left_mesencephalic.nii.gz left_spinal.nii.gz left_remaining_cp.nii.gz right_mesencephalic.nii.gz right_spinal.nii.gz right_remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
@@ -192,6 +192,8 @@ do
 
     # TODO: replace by the ensemble tractography strategy of Nasrin and trigeminal_first_order.sh
     #       - PFT tracking necessary one day
+
+    # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
     echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv} -------------|"
     scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
 			${out_dir}/orig_space/bundles_mask/${atlas_component} \
