@@ -321,10 +321,10 @@ done
 
 
 # TODO: need better cleaning up 
+#  - better ROIs first
+#  - cut. too aggressive? Could be optional
 #  - length
-#  - better ROIs. Wait for Nasrine.
 #  - recobundle will not work because of field of view
-#  - cut? too aggressive?
 
 # Last organization move of files in the proper output directories in mni_space
 mv  ${mni_tracking_dir}/orig_*  ${mni_tracking_dir}/orig/
