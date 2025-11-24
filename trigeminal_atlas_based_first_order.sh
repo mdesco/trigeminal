@@ -320,9 +320,11 @@ do
 done
 
 
-# TODO: need better cleaning up -  Recobundle with atlas? - later
+# TODO: need better cleaning up 
 #  - length
-#  - recobundle
+#  - better ROIs. Wait for Nasrine.
+#  - recobundle will not work because of field of view
+#  - cut? too aggressive?
 
 # Last organization move of files in the proper output directories in mni_space
 mv  ${mni_tracking_dir}/orig_*  ${mni_tracking_dir}/orig/
@@ -331,7 +333,8 @@ mv  ${mni_tracking_dir}/segmented_*  ${mni_tracking_dir}/segmented/
 mv  ${mni_tracking_dir}/final_*  ${mni_tracking_dir}/final/
 
 
-# TODO: option to clean up temporary trk?
+# TODO: option to clean up temporary trk? orig_ trks are big files...
+# rm -rf ${mni_tracking_dir}/orig/*trk ${orig_tracking_dir}/orig/*trk
 
 echo "|------------- Done -------------|"
 echo ""
