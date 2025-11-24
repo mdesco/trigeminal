@@ -322,9 +322,9 @@ done
 
 # TODO: need better cleaning up 
 #  - better ROIs first
-#  - cut. too aggressive? Could be optional
+#  - cut. too aggressive? Could be optional. If we do, we start with that. 
 #  - length
-#  - recobundle will not work because of field of view
+#  - recobundle will not work because of field of view. I tried... 
 
 # Last organization move of files in the proper output directories in mni_space
 mv  ${mni_tracking_dir}/orig_*  ${mni_tracking_dir}/orig/

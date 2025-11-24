@@ -29,12 +29,12 @@ do
 	    echo $t
 	    scil_tractogram_cut_streamlines $t ${t/.trk/_cut.trk} \
 					    --mask ${atlas_dir}/left_mesencephalic_mask_dil3.nii.gz \
-					    --trim_endpoints --processes 8 -f
+					    --keep_longest --processes 8 -f
 	else
 	    echo $t
 	    scil_tractogram_cut_streamlines $t ${t/.trk/_cut.trk} \
 					    --mask ${atlas_dir}/right_mesencephalic_mask_dil3.nii.gz \
-					    --trim_endpoints --processes 8 -f
+					    --keep_longest --processes 8 -f
 	fi
     fi
     if [[ $t == *"remaining_cp"* ]]; then
@@ -42,12 +42,12 @@ do
 	    echo $t
 	    scil_tractogram_cut_streamlines $t ${t/.trk/_cut.trk} \
 					    --mask ${atlas_dir}/left_remaining_cp_mask_dil3.nii.gz \
-					    --trim_endpoints --processes 8 -f
+					    --keep_longest --processes 8 -f
 	else
 	    echo $t
 	    scil_tractogram_cut_streamlines $t ${t/.trk/_cut.trk} \
 					    --mask ${atlas_dir}/right_remaining_cp_mask_dil3.nii.gz \
-					    --trim_endpoints --processes 8 -f
+					    --keep_longest --processes 8 -f
 	fi
     fi
     if [[ $t == *"spinal"* ]]; then
@@ -55,12 +55,12 @@ do
 	    echo $t
 	    scil_tractogram_cut_streamlines $t ${t/.trk/_cut.trk} \
 					    --mask ${atlas_dir}/left_spinal_mask_dil3.nii.gz \
-					    --trim_endpoints --processes 8 -f
+					    --keep_longest --processes 8 -f
 	else
 	    echo $t
 	    scil_tractogram_cut_streamlines $t ${t/.trk/_cut.trk} \
 					    --mask ${atlas_dir}/right_spinal_mask_dil3.nii.gz \
-					    --trim_endpoints --processes 8 -f
+					    --keep_longest --processes 8 -f
 	fi
-    fi
+    fi    
 done
