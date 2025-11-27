@@ -255,7 +255,6 @@ mkdir -p ${trials_dir}/${combo_tag}
             ${subject_dir}/tractoflow/${nsub}__fodf.nii.gz \
             ${orig_rois_dir}/${nsub}_cp_${nside}_orig.nii.gz \
             ${orig_rois_dir}/${nsub}_wm_mask_${fa_threshold}_orig.nii.gz \
-            #${orig_tracking_dir}/${combo_tag}/orig/${nsub}_${nside}_from_cp_${combo_tag}.trk \
             ${trials_dir}/${combo_tag}/${nsub}_${nside}_from_cp_${combo_tag}.trk \
             --npv $npv_per_run \
             --step ${step_size} \
@@ -412,56 +411,65 @@ echo ""
 
 echo "|------------- 8) Cleaning ---------|"
 
-for nside in left right; do
-    scil_bundle_reject_outliers \
-     
-      
 
+for nside in left right; do
+    # ----- 8.1 Mesencephalic -----
+    scil_bundle_reject_outliers \
       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_mesencephalic.trk" \
-      "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_mesencephalic.trk" -f
+      "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_mesencephalic.trk" \
+      -f
 
     cp "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_mesencephalic.trk" \
        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk"
 
 
+    # Length-filter  the left and right mesencephalic bundle: 20< length < 89 mm
+    
+    scil_tractogram_filter_by_length \
+        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len20_89.trk" \
+        --minL 20 --maxL 89 --display_counts -f
 
+
+    cp -f \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len20_89.trk" \
+        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk"
+    
+
+
+
+    # ----- 8.2 spinal -----
     scil_bundle_reject_outliers \
       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_spinal.trk" \
-      "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_spinal.trk" -f
+      "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_spinal.trk" \
+      -f
 
     cp "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_spinal.trk" \
        "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk"
 
 
 
-    # Length-filter ONLY the left spinal bundle: 61 < length < 66 mm
-    if [ "${nside}" = "left" ]; then
-       scil_tractogram_filter_by_length \
-         
-         #"${merged_mni_dir}/final/${nsub}_${nside}_spinal_len61_66.trk" \
-         
-
-         "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
-         "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len61_66.trk" \
-         --minL 61 --maxL 66 --display_counts
+    # Length-filter the left and right spinal bundle: 10< length < 61 mm
+   
+    scil_tractogram_filter_by_length \
+        "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len10_61.trk" \
+        --minL 10 --maxL 61 --display_counts -f
 
 
-       # Overwrite the original filename so the rest of the pipeline (incl. merge) stays unchanged
-        #mv -f \
-          #"${merged_mni_dir}/final/${nsub}_${nside}_spinal_len61_66.trk" \
-          #"${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk"
-       cp -f \
-        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len61_66.trk" \
+    cp -f \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len10_61.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk"
-
-    fi
-
     
 
+
+
+     
+    # ----- 8.3 remaining cp -----
     scil_bundle_reject_outliers \
        "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_remaining_cp.trk" \
        "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_remaining_cp.trk" \
-       --alpha 0.97
+       --alpha 0.97 -f
 
     cp_final="${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk"
     cp "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_remaining_cp.trk" "${cp_final}"  
@@ -476,6 +484,22 @@ for nside in left right; do
     else
         echo "WARN: ${cp_final} does not exist, skipping orientation filtering for ${nside}"
     fi
+
+
+
+    # Length-filter the left and right remaining_cp bundle: 8< length < 32 mm
+    
+    scil_tractogram_filter_by_length \
+        "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_remaining_cp_len8_32.trk" \
+        --minL 8 --maxL 32 --display_counts -f
+
+
+    cp -f \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_remaining_cp_len8_32.trk" \
+        "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk"
+    
+
 done
 
     echo "|------------- 8) Done  -------------|"
