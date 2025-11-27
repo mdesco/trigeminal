@@ -240,13 +240,7 @@ for step_size in "${step_list[@]}"; do
     combo_tag=step_${step_size}_theta_${theta}
     echo "|=== Running combo: ${combo_tag} ===|"
 
-       
-
-mkdir -p ${trials_dir}/${combo_tag}
-
-
-
-
+    mkdir -p ${trials_dir}/${combo_tag}
 
     echo "|------------- 4) [ORIG-SPACE] Generate local tractography with inclusions ROI (${combo_tag}) -------------|"
     for nside in left right; do
