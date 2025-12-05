@@ -419,26 +419,23 @@ for nside in left right; do
     
     # ROI-based cleanup in MNI space, left mesencephalic ---   sphere01_left_mc.bdo
     if [[ "${nside}" == "left" ]]; then
-        # new cleanup ROI for LEFT mc
-        scil_tractogram_filter_by_roi \
-        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \         
+    scil_tractogram_filter_by_roi \
         "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
-        --bdo ${mni_dir}/MNI/sphere01_left_mc.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/sphere02_left_mc.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/cube01_left_mc.bdo 'any' 'exclude' -f
+        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
+        --bdo "${mni_dir}/MNI/sphere01_left_mc.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/sphere02_left_mc.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/cube01_left_mc.bdo" 'any' 'exclude' -f
     fi
 
-
-
-    # Length-filter  the left and right mesencephalic bundle: 10< length < 67 mm
+    # Length-filter  the left and right mesencephalic bundle: 10< length < 53 mm
     
     scil_tractogram_filter_by_length \
         "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
-        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len10_67.trk" \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len10_53.trk" \
         --minL 10 --maxL 67 --display_counts -f
 
     cp -f \
-        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len10_67.trk" \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len10_53.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk"
     
 
@@ -455,7 +452,7 @@ for nside in left right; do
 
 
 
-    # ROI-based cleanup in MNI space, left spinal ---   sphere01_left_spinal
+    # ROI-based cleanup in MNI space, left spinal ---   
     if [[ "${nside}" == "left" ]]; then
         # new cleanup ROI for LEFT spinal
         scil_tractogram_filter_by_roi \
@@ -464,19 +461,22 @@ for nside in left right; do
         --bdo ${mni_dir}/MNI/cube01_left_spinal.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/cube02_left_spinal.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/cube03_left_spinal.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/cube04_left_spinal.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/cube05_left_spinal.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/sphere01_left_spinal.bdo 'any' 'exclude' -f
 
     fi
 
-  # ROI-based cleanup in MNI space, right spinal ---  
+
+    # ROI-based cleanup in MNI space, right spinal ---  
     if [[ "${nside}" == "right" ]]; then
-        # new cleanup ROI for RIGHT spinal
         scil_tractogram_filter_by_roi \
         "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
-        --bdo ${mni_dir}/MNI/cube01_right_spinal.bdo 'any' 'exclude'  -f
+        --bdo "${mni_dir}/MNI/cube01_right_spinal.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/cube02_right_spinal.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/cube03_right_spinal.bdo" 'any' 'exclude' -f
     fi
-
 
     # Length-filter the left and right spinal bundle: 10< length < 61 mm
     scil_tractogram_filter_by_length \
@@ -531,7 +531,8 @@ for nside in left right; do
         scil_tractogram_filter_by_roi \
         "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
-        --bdo ${mni_dir}/MNI/cube01_right_rcp.bdo 'any' 'exclude'  -f
+        --bdo ${mni_dir}/MNI/cube01_right_rcp.bdo 'any' 'exclude'  \
+        --bdo ${mni_dir}/MNI/cube02_right_rcp.bdo 'any' 'exclude'  -f
     fi
 
 
