@@ -425,7 +425,8 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/left_mc1.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/left_mc2.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/left_mc3.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc4.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/left_mc4.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/left_mc5.bdo" 'any' 'exclude' -f
     fi
 
 
@@ -435,7 +436,10 @@ for nside in left right; do
         "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
         --bdo "${mni_dir}/MNI/right_mc1.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc2.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/right_mc2.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_mc3.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_mc4.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_mc5.bdo" 'any' 'exclude' -f
     fi
 
 
@@ -492,7 +496,8 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/right_spinal3.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal4.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal5.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal6.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/right_spinal6.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_spinal7.bdo" 'any' 'exclude' -f
     fi
 
     # Length-filter the left and right spinal bundle: 10< length < 61 mm
@@ -550,7 +555,11 @@ for nside in left right; do
         "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
         --bdo ${mni_dir}/MNI/right_rcp1.bdo 'any' 'exclude'  \
         --bdo ${mni_dir}/MNI/right_rcp2.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp3.bdo 'any' 'exclude'  -f
+        --bdo ${mni_dir}/MNI/right_rcp3.bdo 'any' 'exclude'  \
+        --bdo ${mni_dir}/MNI/right_rcp4.bdo 'any' 'exclude'  \
+        --bdo ${mni_dir}/MNI/right_rcp5.bdo 'any' 'exclude'  \
+        --bdo ${mni_dir}/MNI/right_rcp6.bdo 'any' 'exclude'  \
+        --bdo ${mni_dir}/MNI/right_rcp7.bdo 'any' 'exclude'  -f
     fi
 
 
