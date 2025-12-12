@@ -439,7 +439,9 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/right_mc2.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_mc3.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_mc4.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc5.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/right_mc5.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_mc6.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_mc7.bdo" 'any' 'exclude' -f
     fi
 
 
@@ -481,7 +483,8 @@ for nside in left right; do
         --bdo ${mni_dir}/MNI/left_spinal5.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/right_left_spinal.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal6.bdo 'any' 'exclude' -f
+        --bdo ${mni_dir}/MNI/left_spinal6.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/left_spinal7.bdo 'any' 'exclude' -f
 
     fi
 
@@ -497,7 +500,8 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/right_spinal4.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal5.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal6.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal7.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/right_spinal7.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_spinal8.bdo" 'any' 'exclude' -f
     fi
 
     # Length-filter the left and right spinal bundle: 10< length < 61 mm
@@ -542,8 +546,7 @@ for nside in left right; do
         "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
         --bdo ${mni_dir}/MNI/left_rcp1.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_rcp2.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_rcp3.bdo 'any' 'exclude'  -f
+        --bdo ${mni_dir}/MNI/left_rcp2.bdo 'any' 'exclude'  -f
     fi
 
 
