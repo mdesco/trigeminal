@@ -484,7 +484,8 @@ for nside in left right; do
         --bdo ${mni_dir}/MNI/right_left_spinal.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal6.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal7.bdo 'any' 'exclude' -f
+        --bdo ${mni_dir}/MNI/left_spinal7.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/left_spinal8.bdo 'any' 'exclude' -f
 
     fi
 
