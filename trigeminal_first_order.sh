@@ -155,7 +155,7 @@ antsRegistrationSyN.sh \
     -f "${subject_dir}/tractoflow/${nsub}__t1_warped.nii.gz" \
     -m "${mni_dir}/MNI/mni_masked.nii.gz" \
     -t s \
-    -o "${output_dir}/${nsub}/orig_space/transfo/2orig_"
+    -o "${output_dir}/${nsub}/orig_space/transfo/2orig_" \
     > "${output_dir}/${nsub}/log.txt" 2>&1
 
 ## [ORIG-SPACE] Register all ROIs
@@ -353,7 +353,9 @@ for nside in left right; do
        --drawn_roi "${mni_rois_dir}/${nsub}_any_exclusion_roi_mni.nii.gz" 'any' 'exclude' \
        --drawn_roi "${mni_rois_dir}/${nsub}_${opp_side}_cerebellum_wm_mni.nii.gz" 'any' 'exclude' \
        --drawn_roi "${mni_rois_dir}/${nsub}_${nside}_cerebellum_wm_mni.nii.gz" 'either_end' 'exclude' \
-       --drawn_roi "${mni_dir}/MNI/midsagittal_plane.nii.gz" 'any' 'exclude' -f
+       --drawn_roi "${mni_dir}/MNI/midsagittal_plane.nii.gz" 'any' 'exclude' \
+       --no_empty \
+       -f
    else
      echo "WARN: ${in_trk} not found, skipping filtering for ${nside}"
    fi 
@@ -378,14 +380,18 @@ for nside in left right; do
        "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_mesencephalic.trk"  \
        --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'include' \
        --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
-       --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include' -f
+       --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include'\
+       --no_empty \
+       -f
 
 
     ## Spinal Tract (bottom)
     scil_tractogram_filter_by_roi "${fin}" \
       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_spinal.trk" \
-      --drawn_roi ${mni_dir}/MNI/lowest_cut_brainstem.nii.gz 'any' 'include' \
-      --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' -f
+      --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'include' \
+      --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+      --no_empty \
+      -f
 
     ## Two remaining nucleus/tract
     scil_tractogram_filter_by_roi "${fin}" \
@@ -393,7 +399,9 @@ for nside in left right; do
       --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'exclude' \
       --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'exclude' \
       --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
-      --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' -f
+      --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' \
+      --no_empty \
+      -f
 done
 
 echo "|------------- 7) Done -------------|"
@@ -426,7 +434,9 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/left_mc2.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/left_mc3.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/left_mc4.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc5.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/left_mc5.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/left_mc6.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/left_mc7.bdo" 'any' 'exclude' -f
     fi
 
 
@@ -441,7 +451,8 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/right_mc4.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_mc5.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_mc6.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc7.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/right_mc7.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_mc8.bdo" 'any' 'exclude' -f
     fi
 
 
@@ -482,7 +493,6 @@ for nside in left right; do
         --bdo ${mni_dir}/MNI/left_spinal4.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal5.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/right_left_spinal.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal6.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal7.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal8.bdo 'any' 'exclude' -f
@@ -502,7 +512,12 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/right_spinal5.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal6.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal7.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal8.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/right_spinal8.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_spinal9.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_spinal10.bdo" 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/right_left_spinal2.bdo 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_spinal11.bdo" 'any' 'exclude' -f
     fi
 
     # Length-filter the left and right spinal bundle: 10< length < 61 mm
@@ -547,7 +562,9 @@ for nside in left right; do
         "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
         --bdo ${mni_dir}/MNI/left_rcp1.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_rcp2.bdo 'any' 'exclude'  -f
+        --bdo ${mni_dir}/MNI/left_rcp2.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/left_rcp3.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/left_rcp4.bdo 'any' 'exclude'  -f
     fi
 
 
@@ -563,7 +580,8 @@ for nside in left right; do
         --bdo ${mni_dir}/MNI/right_rcp4.bdo 'any' 'exclude'  \
         --bdo ${mni_dir}/MNI/right_rcp5.bdo 'any' 'exclude'  \
         --bdo ${mni_dir}/MNI/right_rcp6.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp7.bdo 'any' 'exclude'  -f
+        --bdo ${mni_dir}/MNI/right_rcp7.bdo 'any' 'exclude'  \
+        --bdo ${mni_dir}/MNI/right_rcp8.bdo 'any' 'exclude'  -f
     fi
 
 
