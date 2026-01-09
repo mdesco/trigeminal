@@ -314,7 +314,11 @@ do
             --drawn_roi ${mni_rois_dir}/${nsub}_${nside}_spinal_density_second_order_seed_mni.nii.gz 'either_end' 'include' \
             --drawn_roi ${mni_rois_dir}/${nsub}_${nside}_VPM_mni.nii.gz 'any' 'include' \
             --drawn_roi ${mni_dir}/MNI/from_${nside}/VTTT_Controlat_EXC_Ventral_Brainstem.nii.gz 'any' 'exclude' \
-            --drawn_roi ${mni_dir}/MNI/midsagittal_plane.nii.gz 'any' 'exclude' -f
+            --drawn_roi ${mni_dir}/MNI/midsagittal_plane.nii.gz 'any' 'exclude' \
+	    --bdo_roi ${mni_dir}MNI/from_left/...01.bdo 'any' 'exclude' \
+	    --bdo_roi ${mni_dir}MNI/from_left/...02.bdo 'any' 'exclude' \
+	    --bdo_roi ${mni_dir}MNI/from_left/...03.bdo 'any' 'exclude'  -f
+	    
 
         ## dPSN
         ## VPM/Thalamus
