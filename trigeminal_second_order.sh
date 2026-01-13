@@ -292,7 +292,15 @@ do
             --drawn_roi ${mni_rois_dir}/${nsub}_${contra_nside}_VPM_mni.nii.gz 'any' 'include' \
             --drawn_roi ${mni_dir}/MNI/from_${nside}/VTTT_Controlat_EXC_Ventral_Brainstem.nii.gz 'any' 'exclude' \
             --drawn_roi ${mni_dir}/MNI/from_${nside}/VTTT_Controlat_EXC_CaudalMedulla_Controlat.nii.gz 'any' 'exclude' \
-            --drawn_roi ${mni_dir}/MNI/from_${nside}/VTTT_Controlat_INC_VTT_Area.nii.gz 'any' 'include' -f
+            --drawn_roi ${mni_dir}/MNI/from_${nside}/VTTT_Controlat_INC_VTT_Area.nii.gz 'any' 'include'\
+			--bdo ${mni_dir}/MNI/from_${nside}/VTTT_Controlat/VTTT_Controlat_vPSN_1.bdo 'any' 'exclude'\ 
+			--bdo ${mni_dir}/MNI/from_${nside}/VTTT_Controlat/VTTT_Controlat_vPSN_2.bdo 'any' 'exclude'\ 
+			--bdo ${mni_dir}/MNI/from_${nside}/VTTT_Controlat/VTTT_Controlat_vPSN_3.bdo 'any' 'exclude'\ 
+			--bdo ${mni_dir}/MNI/from_${nside}/VTTT_Controlat/VTTT_Controlat_vPSN_4.bdo 'any' 'exclude'\
+			--bdo ${mni_dir}/MNI/from_${nside}/VTTT_Controlat/VTTT_Controlat_vPSN_5.bdo 'any' 'exclude'\
+			--bdo ${mni_dir}/MNI/from_${nside}/VTTT_Controlat/VTTT_Controlat_vPSN_6.bdo 'any' 'exclude' -f
+
+
 
         echo "|------------- 3.2) ${nside} - DTTT (controlateral) - CS -------------|"
         scil_tractogram_filter_by_roi \
