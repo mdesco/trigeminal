@@ -495,16 +495,15 @@ for nside in left right; do
         --bdo ${mni_dir}/MNI/left_spinal3.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal4.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal5.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/right_left_spinal.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal6.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal7.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal8.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal9.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal10.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal11.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal12.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal13.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal14.bdo 'any' 'exclude' \
+        --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/left_spinal15.bdo 'any' 'exclude' -f
 
     fi
@@ -525,9 +524,9 @@ for nside in left right; do
         --bdo "${mni_dir}/MNI/right_spinal8.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal9.bdo" 'any' 'exclude' \
         --bdo "${mni_dir}/MNI/right_spinal10.bdo" 'any' 'exclude' \
+        --bdo "${mni_dir}/MNI/right_spinal11.bdo" 'any' 'exclude' \
         --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/right_left_spinal2.bdo 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal11.bdo" 'any' 'exclude' -f
+        --bdo "${mni_dir}/MNI/right_spinal12.bdo" 'any' 'exclude' -f
     fi
 
     # Length-filter the left and right spinal bundle: 10< length < 61 mm
