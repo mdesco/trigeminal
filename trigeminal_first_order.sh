@@ -10,7 +10,7 @@
 # grid of (step size, theta) combinations, merged, transformed to MNI space, filtered and segmented 
 # into three components (mesencephalic, spinal, remaining nucleus). Final cleaned bundles are saved
 # in both original (orig_space) and MNI (mni_space) coordinate spaces.
-
+#FA = 0.2 is used for HCP data; for clinical data, a lower FA threshold (e.g., 0.15) should be considered due to reduced anisotropy.
 
 # EXAMPLE COMMAND
 #
@@ -21,7 +21,7 @@
 #       -t 10 \
 #       -p 0.5 \
 #       -e 30 \
-#       -f 0.15 \
+#       -f 0.15 \     
 #       -n 20000 \
 #       -g true
 #
@@ -367,6 +367,12 @@ done
 # Remove intermediate MNI-space "orig" tractograms to avoid duplication on disk
 rm -rf "${merged_mni_dir}/orig"
 
+
+
+new_coronal="${mni_dir}/MNI/new_coronal.nii"
+new_lower="${mni_dir}/MNI/new_lower.nii"
+
+
 # =========================
 #  SEGMENT ONLY FINAL FILTERED FILE
 # =========================
@@ -379,7 +385,7 @@ for nside in left right; do
      scil_tractogram_filter_by_roi "${fin}" \
        "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_mesencephalic.trk"  \
        --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'include' \
-       --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+       --drawn_roi "${new_coronal}" 'any' 'include' \
        --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include'\
        --no_empty \
        -f
@@ -388,21 +394,23 @@ for nside in left right; do
     ## Spinal Tract (bottom)
     scil_tractogram_filter_by_roi "${fin}" \
       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_spinal.trk" \
-      --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'include' \
-      --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+      --drawn_roi  "${new_lower}" 'any' 'include' \
+      --drawn_roi  "${new_coronal}" 'any' 'include' \
       --no_empty \
       -f
 
     ## Two remaining nucleus/tract
     scil_tractogram_filter_by_roi "${fin}" \
       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_remaining_cp.trk" \
-      --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'exclude' \
+      --drawn_roi "${new_lower}" 'any' 'exclude' \
       --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'exclude' \
-      --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+      --drawn_roi "${new_coronal}" 'any' 'include' \
       --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' \
       --no_empty \
       -f
 done
+
+
 
 echo "|------------- 7) Done -------------|"
 echo ""
@@ -425,38 +433,6 @@ for nside in left right; do
        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk"
 
     
-    # ROI-based cleanup in MNI space, left mesencephalic ---   
-    if [[ "${nside}" == "left" ]]; then
-    scil_tractogram_filter_by_roi \
-        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
-        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
-        --bdo "${mni_dir}/MNI/left_mc1.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc2.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc3.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc4.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc5.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc6.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/left_mc7.bdo" 'any' 'exclude' -f
-    fi
-
-
-    # ROI-based cleanup in MNI space, right mesencephalic ---   
-    if [[ "${nside}" == "right" ]]; then
-    scil_tractogram_filter_by_roi \
-        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
-        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
-        --bdo "${mni_dir}/MNI/right_mc1.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc2.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc3.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc4.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc5.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc6.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc7.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc7.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc9.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc10.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_mc11.bdo" 'any' 'exclude' -f
-    fi
 
 
 
@@ -484,50 +460,7 @@ for nside in left right; do
        "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk"
 
 
-
-    # ROI-based cleanup in MNI space, left spinal ---   
-    if [[ "${nside}" == "left" ]]; then
-        scil_tractogram_filter_by_roi \
-        "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
-        "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
-        --bdo ${mni_dir}/MNI/left_spinal1.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal2.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal3.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal4.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal5.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal6.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal7.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal8.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal9.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal10.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal11.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal13.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal14.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_spinal15.bdo 'any' 'exclude' -f
-
-    fi
-
-
-    # ROI-based cleanup in MNI space, right spinal ---  
-    if [[ "${nside}" == "right" ]]; then
-        scil_tractogram_filter_by_roi \
-        "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
-        "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
-        --bdo "${mni_dir}/MNI/right_spinal1.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal2.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal3.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal4.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal5.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal6.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal7.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal8.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal9.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal10.bdo" 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal11.bdo" 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/right_left_spinal1.bdo 'any' 'exclude' \
-        --bdo "${mni_dir}/MNI/right_spinal12.bdo" 'any' 'exclude' -f
-    fi
+  
 
     # Length-filter the left and right spinal bundle: 10< length < 61 mm
     scil_tractogram_filter_by_length \
@@ -563,36 +496,6 @@ for nside in left right; do
     fi
 
 
-
-    # ROI-based cleanup in MNI space, left remaining_cp ---    
-    if [[ "${nside}" == "left" ]]; then
-        # new cleanup ROI for left remaining_cp
-        scil_tractogram_filter_by_roi \
-        "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
-        "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
-        --bdo ${mni_dir}/MNI/left_rcp1.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_rcp2.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_rcp3.bdo 'any' 'exclude' \
-        --bdo ${mni_dir}/MNI/left_rcp4.bdo 'any' 'exclude'  -f
-    fi
-
-
-     # ROI-based cleanup in MNI space,  right remaining_cp ---   
-    if [[ "${nside}" == "right" ]]; then
-        # new cleanup ROI for rightremaining_cp
-        scil_tractogram_filter_by_roi \
-        "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
-        "${merged_mni_dir}/final/${nsub}_${nside}_remaining_cp.trk" \
-        --bdo ${mni_dir}/MNI/right_rcp1.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp2.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp3.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp4.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp5.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp6.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp7.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp8.bdo 'any' 'exclude'  \
-        --bdo ${mni_dir}/MNI/right_rcp9.bdo 'any' 'exclude'  -f
-    fi
 
 
 
