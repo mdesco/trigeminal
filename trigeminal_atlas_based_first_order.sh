@@ -22,15 +22,17 @@
 # trigeminal_apply_atlas.sh -s input/S1/ -m ~/Research/Source/trigeminal/ROIs_clean/ -a ~/Research/Source/trigeminal/atlas/ -o output_atlas/S1/ -t 8 -g true
 
 
-usage() { echo "$(basename $0) [-s path/to/subject] [-m path/to/trigeminal/ROIs_clean] [-a path/to/trigeminal/atlas] [-o output_dir] [-t nb_threads] [-g] (if you have a gpu)" 1>&2; exit 1; }
+usage() { echo "$(basename $0) [-s path/to/subject] [-m path/to/trigeminal/ROIs_clean] [-a path/to/trigeminal/atlas] [-o output_dir] [-t nb_threads] [-p step_size] [-e theta] [-g] (if you have a gpu)" 1>&2; exit 1; }
 
-while getopts "s:m:a:o:t:g:" args; do
+while getopts "s:m:a:o:t:p:e:g:" args; do
     case "${args}" in
         s) s=${OPTARG};;
         m) m=${OPTARG};;
         a) a=${OPTARG};;
         o) o=${OPTARG};;
         t) t=${OPTARG};;
+        p) step_size=${OPTARG} ;;
+        e) theta=${OPTARG} ;;        
         g) g=${OPTARG};;
         *) usage;;
     esac
@@ -44,6 +46,14 @@ fi
 gpu=""
 if [ -n "${g}" ]; then
     gpu="--use_gpu"
+fi
+
+if [ -n "${step_size}" ] && [ -n "${theta}" ]; then
+    step_list=(${step_size})
+    theta_list=(${theta})
+else
+    step_list=(0.1 0.5 1.0)
+    theta_list=(20 30 40)
 fi
 
 subject_dir=${s}
