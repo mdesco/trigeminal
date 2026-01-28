@@ -189,20 +189,33 @@ echo "|------------- 4) Tracking from atlas component  -------------|"
 for component in left_mesencephalic.nii.gz left_spinal.nii.gz left_remaining_cp.nii.gz right_mesencephalic.nii.gz right_spinal.nii.gz right_remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
 do
     atlas_component=$component
+    for step_size in "${step_list[@]}"; do
+        for theta in "${theta_list[@]}"; do
+            combo_tag=step_${step_size}_theta_${theta}
+            # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
+            echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv} -------------|"
 
-    # TODO: replace by the ensemble tractography strategy of Nasrin and trigeminal_first_order.sh
-    #       - PFT tracking necessary one day
+            scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
+                ${out_dir}/orig_space/bundles_mask/${atlas_component} \
+                ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
+                ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
+                --npv ${npv} \
+                --step ${step_size} \
+                --theta ${theta} \
+                --min_length 8 --max_length 100 \
+                ${gpu} -f
+        done
+    done
+done
 
-    # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
-    echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv} -------------|"
-    scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
-			${out_dir}/orig_space/bundles_mask/${atlas_component} \
-			${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
-			${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
-			--npv ${npv} \
-			--min_length 8 --max_length 100 \
-			${gpu} -f
-	
+echo "|------------- 4) Tracking from atlas component  -------------|"
+for component in left_mesencephalic.nii.gz left_spinal.nii.gz left_remaining_cp.nii.gz right_mesencephalic.nii.gz right_spinal.nii.gz right_remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
+do
+    scil_tractogram_math lazy_concatenate\
+        ${out_dir}/orig_space/tractograms/orig__*_${component/.nii.gz/.trk} \
+        ${out_dir}/orig_space/tractograms/orig__${component/.nii.gz/.trk} -f
+
+    atlas_component=$component
     echo "|------------- 4.2) Register tracking to MNI space -------------|"
     scil_tractogram_apply_transform \
         ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
@@ -212,10 +225,13 @@ do
         --in_deformation ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
         --remove_invalid \
         --reverse_operation -f
-    
+
     # moving tractogram to the orig folder
     mv ${out_dir}/orig_space/tractograms/orig_*trk ${out_dir}/orig_space/tractograms/orig/
 done
+
+
+
 echo "|------------- 4) Done -------------|"
 echo ""
 
