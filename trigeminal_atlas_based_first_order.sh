@@ -22,15 +22,16 @@
 # trigeminal_apply_atlas.sh -s input/S1/ -m ~/Research/Source/trigeminal/ROIs_clean/ -a ~/Research/Source/trigeminal/atlas/ -o output_atlas/S1/ -t 8 -g true
 
 
-usage() { echo "$(basename $0) [-s path/to/subject] [-m path/to/trigeminal/ROIs_clean] [-a path/to/trigeminal/atlas] [-o output_dir] [-t nb_threads] [-p step_size] [-e theta] [-f fa_threshold] [-n npv_first_order] [-g] (if you have a gpu)" 1>&2; exit 1; }
+usage() { echo "$(basename $0) [-s path/to/subject] [-m path/to/trigeminal/ROIs_clean] [-a path/to/trigeminal/atlas] [-o output_dir] [-i sides] [-t nb_threads] [-p step_size] [-e theta] [-f fa_threshold] [-n npv_first_order] [-g] (if you have a gpu)" 1>&2; exit 1; }
 
-while getopts "s:m:a:o:t:p:e:f:n:g:" args; do
+while getopts "s:m:a:o:t:i:p:e:f:n:g:" args; do
     case "${args}" in
         s) s=${OPTARG};;
         m) m=${OPTARG};;
         a) a=${OPTARG};;
         o) o=${OPTARG};;
         t) t=${OPTARG};;
+        i) choose_sides=${OPTARG};;
         p) step_size=${OPTARG} ;;
         e) theta=${OPTARG} ;;
         f) fa_threshold=${OPTARG} ;;         
@@ -62,7 +63,7 @@ fi
 # TODO: Maybe go with 0.15 as Nasrine. To test.  
 # TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
 #        PFT would allow the tracking to bounce of the CSF to continue tracking
-fa_threshold=0.1 # ${fa_threshold:-0.15}
+fa_threshold=${fa_threshold:-0.1}
 npv_first_order=${npv_first_order:-20000}
 
 # npv_first_order is the total number of seeds per voxel for the whole first-order tracking.
@@ -94,6 +95,7 @@ echo "GPU: " ${gpu}
 # The npv could be adjusted depending on the track of interest. The easiest and thickess is clearly the spinal. 
 # TODO: once Nasrine's PR is in, we mimick her ensemble tractography with 9 local tracking and npv/9
 
+side=${choose_sides:-"left right"}
 opposite_side=leftright
 
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
@@ -211,48 +213,53 @@ echo ""
 #     iii) e-fodf. I think this step will help tracking take the turn, for e.g. on the mesencephalic part
 #     iv) perform local tracking seeding from dilated union masks with endpoints, using e-fodf and a low FA threshold
 echo "|------------- 4) Tracking from atlas component  -------------|"
-for component in left_mesencephalic.nii.gz left_spinal.nii.gz left_remaining_cp.nii.gz right_mesencephalic.nii.gz right_spinal.nii.gz right_remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
+for component in mesencephalic.nii.gz spinal.nii.gz remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
 do
-    atlas_component=$component
-    for step_size in "${step_list[@]}"; do
-        for theta in "${theta_list[@]}"; do
-            combo_tag=step_${step_size}_theta_${theta}
-            # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
-            echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
+    for nside in ${sides}
+    do
+        atlas_component=${nside}_${component}
+        for step_size in "${step_list[@]}"; do
+            for theta in "${theta_list[@]}"; do
+                combo_tag=step_${step_size}_theta_${theta}
+                # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
+                echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
 
-            scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
-                ${out_dir}/orig_space/bundles_mask/${atlas_component} \
-                ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
-                ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
-                --npv ${npv_per_run} \
-                --step ${step_size} \
-                --theta ${theta} \
-                --min_length 8 --max_length 100 \
-                ${gpu} -f -v
+                scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
+                    ${out_dir}/orig_space/bundles_mask/${atlas_component} \
+                    ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
+                    ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
+                    --npv ${npv_per_run} \
+                    --step ${step_size} \
+                    --theta ${theta} \
+                    --min_length 8 --max_length 100 \
+                    ${gpu} -f -v
+            done
         done
     done
 done
 
-for component in left_mesencephalic.nii.gz left_spinal.nii.gz left_remaining_cp.nii.gz right_mesencephalic.nii.gz right_spinal.nii.gz right_remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
+for component in mesencephalic.nii.gz spinal.nii.gz remaining_cp.nii.gz # ${atlas_dir}/bundles_mask/*;
 do
-    atlas_component=$component
-    echo "|------------- 4.2) Concatenate tracking results for atlas component ${component} -------------|"
-    scil_tractogram_math lazy_concatenate\
-        ${out_dir}/orig_space/tractograms/orig__*_${atlas_component/.nii.gz/.trk} \
-        ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} -f
+    for nside in ${sides}
+    do
+        atlas_component=${nside}_${component}
+        echo "|------------- 4.2) Concatenate tracking results for atlas component ${atlas_component} -------------|"
+        scil_tractogram_math lazy_concatenate\
+            ${out_dir}/orig_space/tractograms/orig__*_${atlas_component/.nii.gz/.trk} \
+            ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} -f
 
-    echo "|------------- 4.3) Register tracking to MNI space -------------|"
-    scil_tractogram_apply_transform \
-        ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
-        ${mni_dir}/MNI/mni_masked.nii.gz \
-        ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
-        ${mni_tracking_dir}/orig__${atlas_component/.nii.gz/.trk} \
-        --in_deformation ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
-        --remove_invalid \
-        --reverse_operation -f
+        echo "|------------- 4.3) Register tracking to MNI space -------------|"
+        scil_tractogram_apply_transform \
+            ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
+            ${mni_dir}/MNI/mni_masked.nii.gz \
+            ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
+            ${mni_tracking_dir}/orig__${atlas_component/.nii.gz/.trk} \
+            --in_deformation ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
+            --remove_invalid \
+            --reverse_operation -f
 
-    # moving tractogram to the orig folder
-    mv ${out_dir}/orig_space/tractograms/orig_*trk ${out_dir}/orig_space/tractograms/orig/
+        # moving tractogram to the orig folder
+        mv ${out_dir}/orig_space/tractograms/orig_*trk ${out_dir}/orig_space/tractograms/orig/
 done
 
 echo "|------------- 4) Done -------------|"
@@ -263,7 +270,7 @@ echo "|------------- 5.1) Major filtering for mesencephalic, remaining cp, spina
 # Main filter for mesencephalic, remaining cp, spinal
 for atlas_component in mesencephalic spinal remaining_cp
 do
-    for nside in left right
+    for nside in ${sides}
     do
         echo "|------------- 5.1b) Major filtering for ${atlas_component} nside: ${nside} npv: ${npv} -------------|"
         scil_tractogram_filter_by_roi ${mni_tracking_dir}/orig__${nside}_${atlas_component}.trk \
@@ -278,7 +285,7 @@ done
 
 # Filter mesencephalic
 echo "|------------- 5.2) Segmentation for mesencephalic -------------|"
-for nside in left right
+for nside in ${sides}
 do
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_mesencephalic.trk \
         ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk  \
@@ -297,7 +304,7 @@ done
 
 # Filter remaining_cp
 echo "|------------- 5.3) Segmentation remaining cp -------------|"
-for nside in left right
+for nside in ${sides}
 do
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_remaining_cp.trk \
         ${mni_tracking_dir}/segmented_${nside}_remaining_cp.trk  \
@@ -323,7 +330,7 @@ done
 
 # Filter spinal
 echo "|------------- 5.4) Segmentation spinal -------------|"
-for nside in left right
+for nside in ${sides}
 do
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_spinal.trk \
         ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
@@ -346,7 +353,7 @@ done
 echo "|------------- 6 Transform back final MNI trk to orig space -------------|"
 for atlas_component in mesencephalic spinal remaining_cp
 do
-    for nside in left right
+    for nside in ${sides}
     do
         scil_tractogram_apply_transform ${mni_tracking_dir}/final_${nside}_${atlas_component}.trk \
             ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
