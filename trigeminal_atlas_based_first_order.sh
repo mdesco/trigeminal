@@ -22,9 +22,9 @@
 # trigeminal_apply_atlas.sh -s input/S1/ -m ~/Research/Source/trigeminal/ROIs_clean/ -a ~/Research/Source/trigeminal/atlas/ -o output_atlas/S1/ -t 8 -g true
 
 
-usage() { echo "$(basename $0) [-s path/to/subject] [-m path/to/trigeminal/ROIs_clean] [-a path/to/trigeminal/atlas] [-o output_dir] [-t nb_threads] [-p step_size] [-e theta] [-g] (if you have a gpu)" 1>&2; exit 1; }
+usage() { echo "$(basename $0) [-s path/to/subject] [-m path/to/trigeminal/ROIs_clean] [-a path/to/trigeminal/atlas] [-o output_dir] [-t nb_threads] [-p step_size] [-e theta] [-f fa_threshold] [-n npv_first_order] [-g] (if you have a gpu)" 1>&2; exit 1; }
 
-while getopts "s:m:a:o:t:p:e:g:" args; do
+while getopts "s:m:a:o:t:p:e:f:n:g:" args; do
     case "${args}" in
         s) s=${OPTARG};;
         m) m=${OPTARG};;
@@ -32,7 +32,9 @@ while getopts "s:m:a:o:t:p:e:g:" args; do
         o) o=${OPTARG};;
         t) t=${OPTARG};;
         p) step_size=${OPTARG} ;;
-        e) theta=${OPTARG} ;;        
+        e) theta=${OPTARG} ;;
+        f) fa_threshold=${OPTARG} ;;         
+        n) npv_first_order=${OPTARG} ;;            
         g) g=${OPTARG};;
         *) usage;;
     esac
@@ -56,6 +58,23 @@ else
     theta_list=(20 30 40)
 fi
 
+
+# TODO: Maybe go with 0.15 as Nasrine. To test.  
+# TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
+#        PFT would allow the tracking to bounce of the CSF to continue tracking
+fa_threshold=${fa_threshold:-0.15}
+npv_first_order=${npv_first_order:-20000}
+
+# npv_first_order is the total number of seeds per voxel for the whole first-order tracking.
+# It is divided by the number of step/theta combinations.
+# The resulting npv_per_run is the number of seeds actually used in each run.
+
+# number of step/theta combos
+n_combos=$(( ${#step_list[@]} * ${#theta_list[@]} ))
+# seeds per combo (rounded)
+npv_per_run=$(( (npv_first_order + n_combos - 1) / n_combos ))  # ceiling division
+echo "Using $npv_per_run seeds per voxel per run (based on $npv_first_order total)"
+
 subject_dir=${s}
 atlas_dir=${a}
 mni_dir=${m}
@@ -68,7 +87,6 @@ echo "Atlas MNI: " ${atlas_dir}
 echo "Output folder: " ${out_dir}
 echo "GPU: " ${gpu}
 
-npv="400" #TODO: add an npv option. No need for npy=100. Sub-optimal. At npv 400, mesencephalic is still a bit small.
 #      Lets wait to have ensemble tractography before augmenting npv more.
 # Observations: at 2mm iso, on Melodie's data, I have a feeling mesencephalic could need NPV > 400. Other parts are ok.
 # On 1.7 iso, npv 400 seems like a trade-off.
@@ -77,9 +95,6 @@ npv="400" #TODO: add an npv option. No need for npy=100. Sub-optimal. At npv 400
 # TODO: once Nasrine's PR is in, we mimick her ensemble tractography with 9 local tracking and npv/9
 
 opposite_side=leftright
-fa_threshold=0.1 # TODO: Maybe go with 0.15 as Nasrine. To test.  
-# TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
-#        PFT would allow the tracking to bounce of the CSF to continue tracking
 
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
 mkdir -p ${out_dir}/{orig_space,mni_space}/rois
@@ -209,7 +224,7 @@ do
                 ${out_dir}/orig_space/bundles_mask/${atlas_component} \
                 ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
                 ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
-                --npv ${npv} \
+                --npv ${npv_per_run} \
                 --step ${step_size} \
                 --theta ${theta} \
                 --min_length 8 --max_length 100 \
