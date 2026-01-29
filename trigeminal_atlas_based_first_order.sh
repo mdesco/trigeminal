@@ -4,7 +4,7 @@
 # This version of the script performs a Bundle-Specific Tractography (BST)
 # based on the a priori of the trigeminal_nerve atlas. That is, the atlas
 # is used as prior to seed aggressively and define masks to help tractography.
-# The FA threshold is lowered to 0.01 to track everywhere. 
+# The FA threshold is lowered to 0.01 to track everywhere.
 
 # Input structure
 #
@@ -12,7 +12,7 @@
 #    ├── sub-01
 #    │   ├── freesurfer
 #    │   │   └─── aparc.DKTatlas+aseg.mgz
-#    │   ├── tractoflow    
+#    │   ├── tractoflow
 #    │   │   └─── sub-01__fa.nii.gz
 #    │   │   └─── sub-01__fodf.nii.gz
 #    │   │   └─── sub-01__t1_warped.nii.gz
@@ -34,8 +34,8 @@ while getopts "s:m:a:o:t:i:p:e:f:n:g:" args; do
         i) choose_sides=${OPTARG};;
         p) step_size=${OPTARG} ;;
         e) theta=${OPTARG} ;;
-        f) fa_threshold=${OPTARG} ;;         
-        n) npv_first_order=${OPTARG} ;;            
+        f) fa_threshold=${OPTARG} ;;
+        n) npv_first_order=${OPTARG} ;;
         g) g=${OPTARG};;
         *) usage;;
     esac
@@ -55,16 +55,15 @@ if [ -n "${step_size}" ] && [ -n "${theta}" ]; then
     step_list=(${step_size})
     theta_list=(${theta})
 else
-    step_list=(0.1 0.5 1.0)
-    theta_list=(20 30 40)
+    step_list=(0.1) # (0.1 0.5 1.0)
+    theta_list=(20 30) # (20 30 40)
 fi
 
-
-# TODO: Maybe go with 0.15 as Nasrine. To test.  
+# TODO: Maybe go with 0.15 as Nasrine. To test.
 # TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
 #        PFT would allow the tracking to bounce of the CSF to continue tracking
 fa_threshold=${fa_threshold:-0.1}
-npv_first_order=${npv_first_order:-20000}
+npv_first_order=${npv_first_order:-400}
 
 # npv_first_order is the total number of seeds per voxel for the whole first-order tracking.
 # It is divided by the number of step/theta combinations.
@@ -73,7 +72,7 @@ npv_first_order=${npv_first_order:-20000}
 # number of step/theta combos
 n_combos=$(( ${#step_list[@]} * ${#theta_list[@]} ))
 # seeds per combo (rounded)
-npv_per_run=400 #$(( (npv_first_order + n_combos - 1) / n_combos ))  # ceiling division
+npv_per_run=40 # $(( (npv_first_order + n_combos - 1) / n_combos ))  # ceiling division
 echo "Using $npv_per_run seeds per voxel per run (based on $npv_first_order total)"
 
 subject_dir=${s}
@@ -91,11 +90,11 @@ echo "GPU: " ${gpu}
 #      Lets wait to have ensemble tractography before augmenting npv more.
 # Observations: at 2mm iso, on Melodie's data, I have a feeling mesencephalic could need NPV > 400. Other parts are ok.
 # On 1.7 iso, npv 400 seems like a trade-off.
-# HCP, the mesencephalic part is the tiniest. Could take more npv. The turn is hard to make. 
-# The npv could be adjusted depending on the track of interest. The easiest and thickess is clearly the spinal. 
+# HCP, the mesencephalic part is the tiniest. Could take more npv. The turn is hard to make.
+# The npv could be adjusted depending on the track of interest. The easiest and thickess is clearly the spinal.
 # TODO: once Nasrine's PR is in, we mimick her ensemble tractography with 9 local tracking and npv/9
 
-side=${choose_sides:-"left right"}
+sides=${choose_sides:-"left right"}
 opposite_side=leftright
 
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
@@ -109,13 +108,13 @@ orig_tracking_dir=${out_dir}/orig_space/tractograms/
 mni_tracking_dir=${out_dir}/mni_space/tractograms/
 
 echo "|------------- 1) Register mni_masked in orig space -------------|"
-antsRegistrationSyN.sh -d 3 \
-    -f ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
-    -m ${mni_dir}/MNI/mni_masked.nii.gz \
-    -t s \
-    -o ${out_dir}/orig_space/transfo/2orig_ \
-    -y 1 \
-    -n ${nb_thread} >> ${out_dir}/orig_space/transfo/2orig_log.txt
+#antsRegistrationSyN.sh -d 3 \
+#    -f ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
+#    -m ${mni_dir}/MNI/mni_masked.nii.gz \
+#    -t s \
+#    -o ${out_dir}/orig_space/transfo/2orig_ \
+#    -y 1 \
+#    -n ${nb_thread} >> ${out_dir}/orig_space/transfo/2orig_log.txt
 
 echo "|------------- 1.1) Reshape aparc.DKTatlas+aseg.mgz orig space -------------|"
 ## [ORIG-SPACE] Reshape aparc.DKTatlas+aseg.mgz
@@ -127,7 +126,7 @@ echo "|------------- 1) Done -------------|"
 echo ""
 
 echo "|------------- 2) Generate exclusions and inclusions ROI -------------|"
-## [ORIG-SPACE] Exclusions ROI labels 
+## [ORIG-SPACE] Exclusions ROI labels
 Left_Cerebral_Cortex=($(seq 1000 1035)) # warning for missing labels is normal
 Right_Cerebral_Cortex=($(seq 2000 2035))
 Left_Cerebral_WM=(2)
@@ -135,7 +134,7 @@ Right_Cerebral_WM=(41)
 Cerebellum_Cortex=(8 47)
 Right_Cerebellum_WM=(46)
 Left_Cerebellum_WM=(7)
-Any_Exclusion_ROI=(${Left_Cerebral_Cortex[*]} ${Right_Cerebral_Cortex[*]} ${Left_Cerebral_WM[*]} ${Right_Cerebral_WM[*]} ${Cerebellum_Cortex[*]}) #Generate bilateral exclusion array 
+Any_Exclusion_ROI=(${Left_Cerebral_Cortex[*]} ${Right_Cerebral_Cortex[*]} ${Left_Cerebral_WM[*]} ${Right_Cerebral_WM[*]} ${Cerebellum_Cortex[*]}) #Generate bilateral exclusion array
 
 ## Exclusions ROIs masks
 ## Generate bilateral exclusion ROI
@@ -173,7 +172,7 @@ do
 		-t ${out_dir}/orig_space/transfo/2orig_1InverseWarp.nii.gz \
 		-o ${mni_rois_dir}/${roi}_mni.nii.gz \
 		-n NearestNeighbor;
-    
+
     scil_volume_math convert \
 		${mni_rois_dir}/${roi}_mni.nii.gz \
 		${mni_rois_dir}/${roi}_mni.nii.gz --data_type int16 -f
@@ -197,7 +196,7 @@ do
             -t ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
             -o ${out_dir}/orig_space/${mask_type}/${atlas_component} \
             -n NearestNeighbor;
-	
+
         scil_volume_math convert \
             ${out_dir}/orig_space/${mask_type}/${atlas_component} \
             ${out_dir}/orig_space/${mask_type}/${atlas_component} \
@@ -224,15 +223,15 @@ do
                 # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
                 echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
 
-                scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
-                    ${out_dir}/orig_space/bundles_mask/${atlas_component} \
-                    ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
-                    ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
-                    --npv ${npv_per_run} \
-                    --step ${step_size} \
-                    --theta ${theta} \
-                    --min_length 8 --max_length 100 \
-                    ${gpu} -f -v
+                #scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
+                #    ${out_dir}/orig_space/bundles_mask/${atlas_component} \
+                #    ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
+                #    ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
+                #    --npv ${npv_per_run} \
+                #    --step ${step_size} \
+                #    --theta ${theta} \
+                #    --min_length 8 --max_length 100 \
+                #    ${gpu} -f -v
             done
         done
     done
@@ -244,23 +243,24 @@ do
     do
         atlas_component=${nside}_${component}
         echo "|------------- 4.2) Concatenate tracking results for atlas component ${atlas_component} -------------|"
-        scil_tractogram_math lazy_concatenate\
-            ${out_dir}/orig_space/tractograms/orig__*_${atlas_component/.nii.gz/.trk} \
-            ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} -f
+        #scil_tractogram_math lazy_concatenate\
+        #    ${out_dir}/orig_space/tractograms/orig__*_${atlas_component/.nii.gz/.trk} \
+        #    ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} -f
 
         echo "|------------- 4.3) Register tracking to MNI space -------------|"
-        scil_tractogram_apply_transform \
-            ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
-            ${mni_dir}/MNI/mni_masked.nii.gz \
-            ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
-            ${mni_tracking_dir}/orig__${atlas_component/.nii.gz/.trk} \
-            --in_deformation ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
-            --remove_invalid \
-            --reverse_operation -f
-
-        # moving tractogram to the orig folder
-        mv ${out_dir}/orig_space/tractograms/orig_*trk ${out_dir}/orig_space/tractograms/orig/
+        #scil_tractogram_apply_transform \
+        #    ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
+        #    ${mni_dir}/MNI/mni_masked.nii.gz \
+        #    ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
+        #    ${mni_tracking_dir}/orig__${atlas_component/.nii.gz/.trk} \
+        #    --in_deformation ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
+        #    --remove_invalid \
+        #    --reverse_operation -f
+    done
 done
+
+# moving tractogram to the orig folder
+mv ${out_dir}/orig_space/tractograms/orig_*trk ${out_dir}/orig_space/tractograms/orig/
 
 echo "|------------- 4) Done -------------|"
 echo ""
@@ -294,12 +294,15 @@ do
         --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include' \
         -f
 
-    # TODO: length threshold
-    # 37 mm < length < 82 mm
-    
-    scil_bundle_reject_outliers \
+    # Filter by length (10-67)
+    scil_tractogram_filter_by_length \
         ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk \
-        ${mni_tracking_dir}/final_${nside}_mesencephalic.trk -f
+        ${mni_tracking_dir}/final_${nside}_mesencephalic.trk \
+        --minL 10 --maxL 67 --display_counts -f
+
+#    scil_bundle_reject_outliers \
+#        ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk \
+#        ${mni_tracking_dir}/final_${nside}_mesencephalic.trk -f
 done
 
 # Filter remaining_cp
@@ -313,15 +316,18 @@ do
         --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
         --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' \
         -f
-    
-    # TODO: length threshold
-    # 9 mm < length < 38 mm
-    
-    # TODO: we apply the length and ROI rules of Nasrine in the future.
-    scil_bundle_reject_outliers \
+
+    # Filter by length (8-32)
+    scil_tractogram_filter_by_length \
         ${mni_tracking_dir}/segmented_${nside}_remaining_cp.trk \
-        ${mni_tracking_dir}/final_${nside}_remaining_cp.trk  
-    
+        ${mni_tracking_dir}/final_${nside}_remaining_cp.trk \
+        --minL 8 --maxL 32 --display_counts -f
+
+    # TODO: we apply the length and ROI rules of Nasrine in the future.
+#   scil_bundle_reject_outliers \
+#        ${mni_tracking_dir}/segmented_${nside}_remaining_cp.trk \
+#        ${mni_tracking_dir}/final_${nside}_remaining_cp.trk
+
     scil_tractogram_filter_by_orientation \
         ${mni_tracking_dir}/final_${nside}_remaining_cp.trk  \
         ${mni_tracking_dir}/final_${nside}_remaining_cp.trk  \
@@ -340,13 +346,17 @@ do
 
     # TODO: we need better filetring with ROI of the spinal part. There is a branch that we pick that we should not have.
 
-    # TODO: length threshold
-    # 36 mm < length < 70 mm
-    
-    scil_bundle_reject_outliers \
+
+    # Filter by length (10-61)
+    scil_tractogram_filter_by_length \
         ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
         ${mni_tracking_dir}/final_${nside}_spinal.trk \
-        -f
+        --minL 10 --maxL 61 --display_counts -f
+
+#    scil_bundle_reject_outliers \
+#        ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
+#        ${mni_tracking_dir}/final_${nside}_spinal.trk \
+#        -f
 done
 
 
@@ -365,12 +375,26 @@ do
     done
 done
 
+#echo "|------------- 7 Transform back final MNI trk from ATLAS to orig space -------------|"
+#for atlas_component in mesencephalic spinal remaining_cp
+#do
+#    for nside in ${sides}
+#    do
+#        scil_tractogram_apply_transform ${atlas_dir}/${mni_tracking_dir}/final_${nside}_${atlas_component}.trk \
+#            ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
+#            ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
+#            ${orig_tracking_dir}/final/final_${nside}_${atlas_component}.trk \
+#            --inverse \
+#            --in_deformation ${out_dir}/orig_space/transfo/2orig_1InverseWarp.nii.gz \
+#            --remove_invalid -f
+#    done
+#done
 
-# TODO: need better cleaning up 
+# TODO: need better cleaning up
 #  - better ROIs first
-#  - cut. too aggressive? Could be optional. If we do, we start with that. 
+#  - cut. too aggressive? Could be optional. If we do, we start with that.
 #  - length
-#  - recobundle will not work because of field of view. I tried... 
+#  - recobundle will not work because of field of view. I tried...
 
 # Last organization move of files in the proper output directories in mni_space
 mv  ${mni_tracking_dir}/orig_*  ${mni_tracking_dir}/orig/
@@ -384,5 +408,3 @@ mv  ${mni_tracking_dir}/final_*  ${mni_tracking_dir}/final/
 
 echo "|------------- Done -------------|"
 echo ""
-
-
