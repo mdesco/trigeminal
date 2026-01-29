@@ -55,8 +55,8 @@ if [ -n "${step_size}" ] && [ -n "${theta}" ]; then
     step_list=(${step_size})
     theta_list=(${theta})
 else
-    step_list=(0.1) # (0.1 0.5 1.0)
-    theta_list=(20 30) # (20 30 40)
+    step_list=(0.1 0.5 1.0)
+    theta_list=(20 30 40)
 fi
 
 # TODO: Maybe go with 0.15 as Nasrine. To test.
@@ -72,7 +72,7 @@ npv_first_order=${npv_first_order:-400}
 # number of step/theta combos
 n_combos=$(( ${#step_list[@]} * ${#theta_list[@]} ))
 # seeds per combo (rounded)
-npv_per_run=40 # $(( (npv_first_order + n_combos - 1) / n_combos ))  # ceiling division
+npv_per_run=$(( (npv_first_order + n_combos - 1) / n_combos ))  # ceiling division
 echo "Using $npv_per_run seeds per voxel per run (based on $npv_first_order total)"
 
 subject_dir=${s}
@@ -100,7 +100,7 @@ opposite_side=leftright
 mkdir -p ${out_dir}/orig_space/{bundles_mask,transfo}
 mkdir -p ${out_dir}/{orig_space,mni_space}/rois
 mkdir -p ${out_dir}/mni_space/tractograms/{orig,filtered,length,outliers,segmented,final}
-mkdir -p ${out_dir}/orig_space/tractograms/{orig,final}
+mkdir -p ${out_dir}/orig_space/tractograms/{orig,final,template}
 
 orig_rois_dir=${out_dir}/orig_space/rois
 mni_rois_dir=${out_dir}/mni_space/rois
@@ -108,13 +108,13 @@ orig_tracking_dir=${out_dir}/orig_space/tractograms/
 mni_tracking_dir=${out_dir}/mni_space/tractograms/
 
 echo "|------------- 1) Register mni_masked in orig space -------------|"
-#antsRegistrationSyN.sh -d 3 \
-#    -f ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
-#    -m ${mni_dir}/MNI/mni_masked.nii.gz \
-#    -t s \
-#    -o ${out_dir}/orig_space/transfo/2orig_ \
-#    -y 1 \
-#    -n ${nb_thread} >> ${out_dir}/orig_space/transfo/2orig_log.txt
+antsRegistrationSyN.sh -d 3 \
+    -f ${subject_dir}/tractoflow/*__t1_warped.nii.gz \
+    -m ${mni_dir}/MNI/mni_masked.nii.gz \
+    -t s \
+    -o ${out_dir}/orig_space/transfo/2orig_ \
+    -y 1 \
+    -n ${nb_thread} >> ${out_dir}/orig_space/transfo/2orig_log.txt
 
 echo "|------------- 1.1) Reshape aparc.DKTatlas+aseg.mgz orig space -------------|"
 ## [ORIG-SPACE] Reshape aparc.DKTatlas+aseg.mgz
@@ -223,15 +223,15 @@ do
                 # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
                 echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
 
-                #scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
-                #    ${out_dir}/orig_space/bundles_mask/${atlas_component} \
-                #    ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
-                #    ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
-                #    --npv ${npv_per_run} \
-                #    --step ${step_size} \
-                #    --theta ${theta} \
-                #    --min_length 8 --max_length 100 \
-                #    ${gpu} -f -v
+                scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
+                    ${out_dir}/orig_space/bundles_mask/${atlas_component} \
+                    ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
+                    ${out_dir}/orig_space/tractograms/orig__${combo_tag}_${atlas_component/.nii.gz/.trk} \
+                    --npv ${npv_per_run} \
+                    --step ${step_size} \
+                    --theta ${theta} \
+                    --min_length 8 --max_length 100 \
+                    ${gpu} -f -v
             done
         done
     done
@@ -243,19 +243,19 @@ do
     do
         atlas_component=${nside}_${component}
         echo "|------------- 4.2) Concatenate tracking results for atlas component ${atlas_component} -------------|"
-        #scil_tractogram_math lazy_concatenate\
-        #    ${out_dir}/orig_space/tractograms/orig__*_${atlas_component/.nii.gz/.trk} \
-        #    ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} -f
+        scil_tractogram_math lazy_concatenate\
+            ${out_dir}/orig_space/tractograms/orig__*_${atlas_component/.nii.gz/.trk} \
+            ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} -f
 
         echo "|------------- 4.3) Register tracking to MNI space -------------|"
-        #scil_tractogram_apply_transform \
-        #    ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
-        #    ${mni_dir}/MNI/mni_masked.nii.gz \
-        #    ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
-        #    ${mni_tracking_dir}/orig__${atlas_component/.nii.gz/.trk} \
-        #    --in_deformation ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
-        #    --remove_invalid \
-        #    --reverse_operation -f
+        scil_tractogram_apply_transform \
+            ${out_dir}/orig_space/tractograms/orig__${atlas_component/.nii.gz/.trk} \
+            ${mni_dir}/MNI/mni_masked.nii.gz \
+            ${out_dir}/orig_space/transfo/2orig_0GenericAffine.mat \
+            ${mni_tracking_dir}/orig__${atlas_component/.nii.gz/.trk} \
+            --in_deformation ${out_dir}/orig_space/transfo/2orig_1Warp.nii.gz \
+            --remove_invalid \
+            --reverse_operation -f
     done
 done
 
