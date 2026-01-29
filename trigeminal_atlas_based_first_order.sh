@@ -62,7 +62,7 @@ fi
 # TODO: Maybe go with 0.15 as Nasrine. To test.  
 # TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
 #        PFT would allow the tracking to bounce of the CSF to continue tracking
-fa_threshold=${fa_threshold:-0.15}
+fa_threshold=0.1 # ${fa_threshold:-0.15}
 npv_first_order=${npv_first_order:-20000}
 
 # npv_first_order is the total number of seeds per voxel for the whole first-order tracking.
@@ -72,7 +72,7 @@ npv_first_order=${npv_first_order:-20000}
 # number of step/theta combos
 n_combos=$(( ${#step_list[@]} * ${#theta_list[@]} ))
 # seeds per combo (rounded)
-npv_per_run=$(( (npv_first_order + n_combos - 1) / n_combos ))  # ceiling division
+npv_per_run=400 #$(( (npv_first_order + n_combos - 1) / n_combos ))  # ceiling division
 echo "Using $npv_per_run seeds per voxel per run (based on $npv_first_order total)"
 
 subject_dir=${s}
@@ -218,7 +218,7 @@ do
         for theta in "${theta_list[@]}"; do
             combo_tag=step_${step_size}_theta_${theta}
             # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
-            echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv}, step=${step_size}, theta=${theta} -------------|"
+            echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
 
             scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
                 ${out_dir}/orig_space/bundles_mask/${atlas_component} \
@@ -228,7 +228,7 @@ do
                 --step ${step_size} \
                 --theta ${theta} \
                 --min_length 8 --max_length 100 \
-                ${gpu} -f
+                ${gpu} -f -v
         done
     done
 done
