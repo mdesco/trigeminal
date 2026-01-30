@@ -63,7 +63,7 @@ fi
 # TODO: "hard" we need a real map-include/map-exclude map to run PFT. The nerve is CSF.
 #        PFT would allow the tracking to bounce of the CSF to continue tracking
 fa_threshold=${fa_threshold:-0.1}
-npv_first_order=${npv_first_order:-400}
+npv_first_order=${npv_first_order:-450}
 
 # npv_first_order is the total number of seeds per voxel for the whole first-order tracking.
 # It is divided by the number of step/theta combinations.
@@ -212,7 +212,7 @@ echo ""
 #     iii) e-fodf. I think this step will help tracking take the turn, for e.g. on the mesencephalic part
 #     iv) perform local tracking seeding from dilated union masks with endpoints, using e-fodf and a low FA threshold
 echo "|------------- 4) Tracking from atlas component  -------------|"
-for component in mesencephalic.nii.gz spinal.nii.gz remaining_cp.nii.gz #${atlas_dir}/bundles_mask/*;
+for component in spinal.nii.gz remaining_cp.nii.gz mesencephalic.nii.gz #${atlas_dir}/bundles_mask/*;
 do
     for nside in ${sides}
     do
@@ -220,6 +220,11 @@ do
         for step_size in "${step_list[@]}"; do
             for theta in "${theta_list[@]}"; do
                 combo_tag=step_${step_size}_theta_${theta}
+
+                if [[ ${component} == "mesencephalic.nii.gz" ]]; then
+                    npv_per_run=$(( npv_per_run + 50 ))
+                    echo "Note: mesencephalic could benefit from a higher now npv_per_run is ${npv_per_run}."
+                fi
                 # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
                 echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
 
