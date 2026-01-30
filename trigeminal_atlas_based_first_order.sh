@@ -223,7 +223,7 @@ do
 
                 if [[ ${component} == "mesencephalic.nii.gz" ]]; then
                     npv_per_run=$(( npv_per_run + 50 ))
-                    echo "Note: mesencephalic could benefit from a higher now npv_per_run is ${npv_per_run}."
+                    echo "Note: mesencephalic could benefit from a higher npv now npv_per_run is ${npv_per_run}."
                 fi
                 # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
                 echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
