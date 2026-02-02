@@ -317,7 +317,7 @@ for nside in ${sides}
 do
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_remaining_cp.trk \
         ${mni_tracking_dir}/segmented_${nside}_remaining_cp.trk  \
-        --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'exclude' \
+        --drawn_roi ${mni_dir}/MNI/new_lower.nii.gz 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
         --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' \
@@ -348,7 +348,7 @@ for nside in ${sides}
 do
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_spinal.trk \
         ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
-        --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'include' \
+        --drawn_roi ${mni_dir}/MNI/new_lower.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz 'either_end' 'include' \
