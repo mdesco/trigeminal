@@ -157,6 +157,8 @@ antsRegistrationSyN.sh \
     -t s \
     -o "${output_dir}/${nsub}/orig_space/transfo/2orig_" \
     > "${output_dir}/${nsub}/log.txt" 2>&1
+    
+
 
 ## [ORIG-SPACE] Register all ROIs
 for nroi in cp_left cp_right; do
@@ -373,31 +375,51 @@ new_coronal="${mni_dir}/MNI/new_coronal.nii"
 new_lower="${mni_dir}/MNI/new_lower.nii"
 
 
+
 # =========================
 #  SEGMENT ONLY FINAL FILTERED FILE
 # =========================
 
 echo "|------------- 7) [MNI-SPACE] Segmentation -------------|"
-for nside in left right; do 
+for nside in left right; do
     fin="${merged_mni_dir}/filtered/${nsub}_${nside}_from_cp_filtered.trk"
 
+    # choose thalamus ROI to exclude based on side
+    if [[ "${nside}" == "left" ]]; then
+        thal_roi="${mni_dir}/MNI/left_thalamus_231_245_brainnetome__to_mni_masked.nii.gz"
+    else
+        thal_roi="${mni_dir}/MNI/right_thalamus_232_246_brainnetome__to_mni_masked.nii.gz"
+    fi
+
     ## Mesencephalic Tract (Top)
-     scil_tractogram_filter_by_roi "${fin}" \
-       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_mesencephalic.trk"  \
-       --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'include' \
-       --drawn_roi "${new_coronal}" 'any' 'include' \
-       --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include'\
-       --no_empty \
-       -f
+    scil_tractogram_filter_by_roi "${fin}" \
+      "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_mesencephalic.trk"  \
+      --drawn_roi "${mni_dir}/MNI/upper_cut_brainstem.nii.gz" 'any' 'include' \
+      --drawn_roi "${new_coronal}" 'any' 'include' \
+      --drawn_roi "${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz" 'any' 'include' \
+      --drawn_roi "${mni_dir}/MNI/csf_mask.nii.gz" 'any' 'exclude' \
+      --drawn_roi "${thal_roi}" 'any' 'exclude' \
+      --no_empty \
+      -f
 
+    ## Spinal Tracts (botton)
 
-    ## Spinal Tract (bottom)
+    if [[ "${nside}" == "left" ]]; then
+    cp_roi="${mni_dir}/MNI/cp_left_bin.nii.gz"
+    else
+    cp_roi="${mni_dir}/MNI/cp_right_bin.nii.gz"
+    fi
+
     scil_tractogram_filter_by_roi "${fin}" \
       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_spinal.trk" \
       --drawn_roi  "${new_lower}" 'any' 'include' \
       --drawn_roi  "${new_coronal}" 'any' 'include' \
+      --drawn_roi  "${mni_dir}/MNI/csf_mask.nii.gz" 'any' 'exclude' \
+      --drawn_roi  "${cp_roi}" 'either_end' 'include' \
       --no_empty \
       -f
+
+
 
     ## Two remaining nucleus/tract
     scil_tractogram_filter_by_roi "${fin}" \
@@ -415,9 +437,14 @@ done
 echo "|------------- 7) Done -------------|"
 echo ""
 
+
+
 # =========================
 #  CLEANING FINAL BUNDLES
 # =========================
+
+
+
 
 echo "|------------- 8) Cleaning ---------|"
 
@@ -427,25 +454,25 @@ for nside in left right; do
     scil_bundle_reject_outliers \
       "${merged_mni_dir}/segmented/ROIs/${nsub}_${nside}_mesencephalic.trk" \
       "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_mesencephalic.trk" \
-      -f
+     -f
+      
 
     cp "${merged_mni_dir}/segmented/outliers/${nsub}_${nside}_mesencephalic.trk" \
        "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk"
 
     
 
-
-
-    # Length-filter  the left and right mesencephalic bundle: 37< length < 67 mm
+    # Length-filter  the left and right mesencephalic bundle: 37< length < 67 mm now 35-70
     
     scil_tractogram_filter_by_length \
         "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk" \
-        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len37_67.trk" \
-        --minL 37 --maxL 67 --display_counts -f
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len35_70.trk" \
+        --minL 35 --maxL 70 --display_counts -f
 
     cp -f \
-        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len37_67.trk" \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_mesencephalic_len35_70.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_mesencephalic.trk"
+    
     
 
 
@@ -462,15 +489,15 @@ for nside in left right; do
 
   
 
-    # Length-filter the left and right spinal bundle: 10< length < 61 mm
+    # Length-filter the left and right spinal bundle: 10< length < 55 mm
     scil_tractogram_filter_by_length \
         "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk" \
-        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len10_61.trk" \
-        --minL 10 --maxL 61 --display_counts -f
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len10_55.trk" \
+        --minL 10 --maxL 55 --display_counts -f
 
 
     cp -f \
-        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len10_61.trk" \
+        "${merged_mni_dir}/segmented/length/${nsub}_${nside}_spinal_len10_55.trk" \
         "${merged_mni_dir}/final/${nsub}_${nside}_spinal.trk"
     
 
@@ -547,10 +574,11 @@ for nside in left right; do
               --in_deformation "${output_dir}/${nsub}/orig_space/transfo/2orig_1InverseWarp.nii.gz" \
               --remove_invalid -f
         else
-            echo "WARN: Final MNI bundle not found for ${nside} ${bundle}, skipping back-to-orig."
+            echo "WARN: Final MNI bundle not found for ${nlowerside} ${bundle}, skipping back-to-orig."
         fi
     done
 done
 
 echo "|------------- 9) Done -------------|"
 echo ""
+
