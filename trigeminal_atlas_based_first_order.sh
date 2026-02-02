@@ -284,7 +284,7 @@ do
             --drawn_roi ${mni_rois_dir}/${nside/${nside}/${opposite_side/${nside}/}}_cerebellum_wm_mni.nii.gz 'any' 'exclude' \
             --drawn_roi ${mni_rois_dir}/${nside}_cerebellum_wm_mni.nii.gz 'either_end' 'exclude' \
             --drawn_roi ${mni_dir}/MNI/midsagittal_plane.nii.gz 'any' 'exclude' \
-            --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz any include -f -v # It was not needed when creating atlas since everything was tracked from cp
+            --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz 'any' 'include' -f -v # It was not needed when creating atlas since everything was tracked from cp
     done
 done
 
@@ -297,6 +297,7 @@ do
         --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include' \
+        --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
         -f
 
     # Filter by length (10-67)
@@ -320,6 +321,8 @@ do
         --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
         --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' \
+        --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
+        --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz 'either_end' 'include' \
         -f
 
     # Filter by length (8-32)
@@ -347,6 +350,8 @@ do
         ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
         --drawn_roi ${mni_dir}/MNI/lower_cut_brainstem.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+        --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
+        --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz 'either_end' 'include' \
         -f
 
     # TODO: we need better filetring with ROI of the spinal part. There is a branch that we pick that we should not have.
