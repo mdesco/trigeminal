@@ -221,7 +221,7 @@ do
             for theta in "${theta_list[@]}"; do
                 combo_tag=step_${step_size}_theta_${theta}
 
-                if [[ ${component} == "mesencephalic.nii.gz" ]]; then
+                if [[ ${component} == "mesencephalic.nii.gz" ]] || [[ ${component} == "spinal.nii.gz" ]]; then
                     npv_per_run=$(( npv_per_run + 50 ))
                     echo "Note: mesencephalic could benefit from a higher npv now npv_per_run is ${npv_per_run}."
                 fi
@@ -295,16 +295,16 @@ do
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_mesencephalic.trk \
         ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk  \
         --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'include' \
-        --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+        --drawn_roi ${mni_dir}/MNI/new_coronal.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
         -f
 
-    # Filter by length (10-67)
+    # Filter by length (35-70)
     scil_tractogram_filter_by_length \
         ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk \
         ${mni_tracking_dir}/final_${nside}_mesencephalic.trk \
-        --minL 10 --maxL 67 --display_counts -f
+        --minL 35 --maxL 70 --display_counts -f
 
 #    scil_bundle_reject_outliers \
 #        ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk \
@@ -319,7 +319,7 @@ do
         ${mni_tracking_dir}/segmented_${nside}_remaining_cp.trk  \
         --drawn_roi ${mni_dir}/MNI/new_lower.nii.gz 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'exclude' \
-        --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+        --drawn_roi ${mni_dir}/MNI/new_coronal.nii.gz 'any' 'include' \
         --bdo ${mni_dir}/MNI/sphere_exclusion_for_remaining_cp.bdo 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz 'either_end' 'include' \
@@ -349,7 +349,7 @@ do
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_spinal.trk \
         ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
         --drawn_roi ${mni_dir}/MNI/new_lower.nii.gz 'any' 'include' \
-        --drawn_roi ${mni_dir}/MNI/coronal_plane.nii.gz 'any' 'include' \
+        --drawn_roi ${mni_dir}/MNI/new_coronal.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
         --drawn_roi ${mni_dir}/MNI/cp_${nside}_bin.nii.gz 'either_end' 'include' \
         -f
@@ -357,11 +357,11 @@ do
     # TODO: we need better filetring with ROI of the spinal part. There is a branch that we pick that we should not have.
 
 
-    # Filter by length (10-61)
+    # Filter by length (10-55)
     scil_tractogram_filter_by_length \
         ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
         ${mni_tracking_dir}/final_${nside}_spinal.trk \
-        --minL 10 --maxL 61 --display_counts -f
+        --minL 10 --maxL 55 --display_counts -f
 
 #    scil_bundle_reject_outliers \
 #        ${mni_tracking_dir}/segmented_${nside}_spinal.trk \
