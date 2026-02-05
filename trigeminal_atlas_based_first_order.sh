@@ -292,12 +292,21 @@ done
 echo "|------------- 5.2) Segmentation for mesencephalic -------------|"
 for nside in ${sides}
 do
+
+    # choose thalamus ROI to exclude based on side
+    if [[ "${nside}" == "left" ]]; then
+        thal_roi="${mni_dir}/MNI/left_thalamus_231_245_brainnetome__to_mni_masked.nii.gz"
+    else
+        thal_roi="${mni_dir}/MNI/right_thalamus_232_246_brainnetome__to_mni_masked.nii.gz"
+    fi
+
     scil_tractogram_filter_by_roi ${mni_tracking_dir}/filtered_${nside}_mesencephalic.trk \
         ${mni_tracking_dir}/segmented_${nside}_mesencephalic.trk  \
         --drawn_roi ${mni_dir}/MNI/upper_cut_brainstem.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/new_coronal.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/coronal_plane_for_mesencephalic.nii.gz 'any' 'include' \
         --drawn_roi ${mni_dir}/MNI/csf_mask.nii.gz 'any' 'exclude' \
+        --drawn_roi ${thal_roi} 'any' 'exclude' \
         -f
 
     # Filter by length (35-70)
