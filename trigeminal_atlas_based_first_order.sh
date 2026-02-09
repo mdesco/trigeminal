@@ -4,7 +4,7 @@
 # This version of the script performs a Bundle-Specific Tractography (BST)
 # based on the a priori of the trigeminal_nerve atlas. That is, the atlas
 # is used as prior to seed aggressively and define masks to help tractography.
-# The FA threshold is lowered to 0.01 to track everywhere.
+# The FA threshold is lowered to 0.1 to track everywhere.
 
 # Input structure
 #
@@ -225,9 +225,8 @@ do
                     npv_per_run=$(( npv_per_run + 50 ))
                     echo "Note: mesencephalic could benefit from a higher npv now npv_per_run is ${npv_per_run}."
                 fi
-                # TODO: mesecenphalic could use a bigger NPV > remaining_cp > spinal
-                echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
 
+                echo "|------------- 4.1) Tracking from atlas component ${atlas_component} with npv=${npv_per_run}, step=${step_size}, theta=${theta} -------------|"
                 scil_tracking_local ${subject_dir}/tractoflow/*__fodf.nii.gz \
                     ${out_dir}/orig_space/bundles_mask/${atlas_component} \
                     ${orig_rois_dir}/wm_mask_${fa_threshold}_orig.nii.gz \
